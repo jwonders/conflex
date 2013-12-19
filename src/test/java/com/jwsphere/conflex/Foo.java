@@ -37,6 +37,9 @@ public final class Foo {
 
 	@ConflexProperty(key = "double_key", defaultValue = "0.0", description = "a double")
 	private double doubleValue;
+	
+	@ConflexProperty(key = "Double_key", defaultValue = "1.0", description = "a Double")
+	private Double bigDoubleValue;
 
 	public Foo(Properties properties) {
 		conflex.inject(this, properties);
@@ -67,4 +70,8 @@ public final class Foo {
 		return doubleValue;
 	}
 
+	public Double getBigDoubleValue() {
+		return bigDoubleValue;
+	}
+	
 }

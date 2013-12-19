@@ -15,6 +15,7 @@ package com.jwsphere.conflex;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -38,6 +39,7 @@ public class FooTest {
 		p.put("int_key", "100");
 		p.put("float_key", "4.5");
 		p.put("double_key", "9.5");
+		p.put("Double_key", "5.8");
 		
 		Foo foo = new Foo(p);
 		assertEquals("string_value", foo.getStringValue());
@@ -45,6 +47,7 @@ public class FooTest {
 		assertEquals(100, foo.getIntValue());
 		assertEquals(4.5, foo.getFloatValue(), 1e-6);
 		assertEquals(9.5, foo.getDoubleValue(), 1e-6);
+		assertEquals(5.8, foo.getBigDoubleValue(), 1e-6);
 	}
 	
 	@Test
@@ -98,6 +101,45 @@ public class FooTest {
 		ConflexGenerator generator = new ConflexGenerator(Foo.class);
 		System.out.println(generator.generatePropertiesFileTemplate());
 		System.out.println(generator.generateHadoopFileTemplate());
+	}
+	
+	@Test
+	public void missing() {
+		Map<String, String> conf = new HashMap<String, String>();
+		conf.put("strin_key", "string_value"); // misspelling
+		conf.put("long_key", "10");
+		conf.put("int_key", "100");
+		conf.put("float_key", "4.5");
+		conf.put("double_key", "9.5");
+		
+		ConflexAnalyzer analyzer = new ConflexAnalyzer(Foo.class);
+		Collection<String> missing = analyzer.findMissingProperties(conf);
+		assertEquals(2, missing.size());
+		
+		System.out.println("Missing properties");
+		for (String m : missing) {
+			System.out.println(m);	
+		}
+	}
+
+	@Test
+	public void extra() {
+		Map<String, String> conf = new HashMap<String, String>();
+		conf.put("string_key", "string_value");
+		conf.put("long_key", "10");
+		conf.put("int_key", "100");
+		conf.put("float_key", "4.5");
+		conf.put("double_key", "9.5");
+		conf.put("extra_key", "extra_value");
+		
+		ConflexAnalyzer analyzer = new ConflexAnalyzer(Foo.class);
+		Collection<String> extra = analyzer.findExtraProperties(conf);
+		assertEquals(1, extra.size());
+		
+		System.out.println("Extra properties");
+		for (String e : extra) {
+			System.out.println(e);	
+		}
 	}
 
 }

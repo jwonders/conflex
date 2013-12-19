@@ -20,14 +20,20 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+/**
+ * This class provides some utilities for analyzing the properties annotated
+ * in a set of classes when compared to a configuration of some sort.
+ * 
+ * @author jonathan.wonders
+ */
 public class ConflexAnalyzer {
 
 	private Class<?>[] classes;
-	
+
 	public ConflexAnalyzer(Class<?> ... classes) {
 		this.classes = classes;
 	}
-	
+
 	public Collection<String> findMissingProperties(Properties properties) {
 		Collection<String> missing = new ArrayList<String>();
 		for (ConflexProperty property : Conflex.getAnnotatedProperties(classes)) {
@@ -59,7 +65,7 @@ public class ConflexAnalyzer {
 		}
 		return findExtraProperties(propertyKeys);
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public Collection<String> findExtraProperties(Map conf) {
 		SortedSet<String> propertyKeys = new TreeSet<String>();
@@ -71,16 +77,16 @@ public class ConflexAnalyzer {
 		}
 		return findExtraProperties(propertyKeys);
 	}
-	
+
 	private SortedSet<String> findExtraProperties(SortedSet<String> confKeys) {
 		Collection<ConflexProperty> cProperties = 
 				Conflex.getAnnotatedProperties(classes);
-		
+
 		SortedSet<String> cPropertyKeys = new TreeSet<String>();
 		for (ConflexProperty property : cProperties) {
 			cPropertyKeys.add(property.key());
 		}
-		
+
 		confKeys.removeAll(cPropertyKeys);
 		return confKeys;
 	}

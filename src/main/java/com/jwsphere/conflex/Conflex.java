@@ -46,6 +46,10 @@ public class Conflex {
 		DEFAULT_TYPE_TO_INJECTOR_MAP.put(int.class, new IntParserPropertyInjector());
 		DEFAULT_TYPE_TO_INJECTOR_MAP.put(float.class, new FloatParserPropertyInjector());
 		DEFAULT_TYPE_TO_INJECTOR_MAP.put(double.class, new DoubleParserPropertyInjector());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Long.class, new BoxedLongParserPropertyInjector());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Integer.class, new BoxedIntParserPropertyInjector());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Float.class, new BoxedFloatParserPropertyInjector());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Double.class, new BoxedDoubleParserPropertyInjector());
 	}
 
 	private List<ResolvedProperty> resolvedProperties;
@@ -165,6 +169,13 @@ public class Conflex {
 		ConflexPropertyInjector injector;
 	}
 
+	/**
+	 * Returns a collection of the {@link ConflexProperty} annotations present
+	 * within the specified classes.
+	 * 
+	 * @param classes The classes to search for annotations.
+	 * @return A collection of the annotations found.
+	 */
 	public static Collection<ConflexProperty> getAnnotatedProperties(Class<?> ... classes) {
 		Collection<ConflexProperty> properties = new ArrayList<ConflexProperty>();
 		for (Class<?> clazz : classes) {
@@ -177,6 +188,5 @@ public class Conflex {
 		}
 		return properties;
 	}
-
 
 }
