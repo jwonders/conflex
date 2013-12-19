@@ -33,7 +33,7 @@ public class ConflexGenerator {
 		this.classes = classes;
 		this.ignoreEmptyDefaults = false;
 	}
-
+	
 	/**
 	 * Configure the generator to ignore properties that have an
 	 * empty string as a default value.

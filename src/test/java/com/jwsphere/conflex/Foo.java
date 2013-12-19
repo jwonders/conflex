@@ -22,8 +22,10 @@ import com.jwsphere.conflex.ConflexProperty;
 public final class Foo {
 
 	private static final Conflex conflex = new Conflex(Foo.class);
+	
+	public static final String STRING_KEY = "string_key";
 
-	@ConflexProperty(key = "string_key", defaultValue = "default", description = "a string")
+	@ConflexProperty(key = STRING_KEY, defaultValue = "default", description = "a string")
 	private String stringValue;
 
 	@ConflexProperty(key = "long_key", defaultValue = "0", description = "a long")
