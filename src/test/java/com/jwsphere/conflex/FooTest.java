@@ -20,16 +20,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Test;
 
-import com.jwsphere.conflex.Conflex;
+import com.jwsphere.conflex.tools.ConflexAnalyzer;
+import com.jwsphere.conflex.tools.ConflexGenerator;
 
 public class FooTest {
-
-	static {
-		BasicConfigurator.configure();
-	}
 	
 	@Test
 	public void injectProperties() {

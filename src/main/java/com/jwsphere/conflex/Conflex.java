@@ -21,7 +21,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import com.jwsphere.conflex.StandardInjectors.BoxedBoolean;
+import com.jwsphere.conflex.StandardInjectors.BoxedInteger;
+import com.jwsphere.conflex.StandardInjectors.BoxedLong;
+import com.jwsphere.conflex.StandardInjectors.BoxedFloat;
+import com.jwsphere.conflex.StandardInjectors.BoxedDouble;
+import com.jwsphere.conflex.StandardInjectors.PrimitiveBoolean;
+import com.jwsphere.conflex.StandardInjectors.PrimitiveDouble;
+import com.jwsphere.conflex.StandardInjectors.PrimitiveFloat;
+import com.jwsphere.conflex.StandardInjectors.PrimitiveInteger;
+import com.jwsphere.conflex.StandardInjectors.PrimitiveLong;
+import com.jwsphere.conflex.StandardInjectors.StringInjector;
 
 /**
  * Conflex performs configuration injection using Java's reflection
@@ -36,20 +46,21 @@ import org.apache.log4j.Logger;
  */
 public class Conflex {
 
-	private static final Logger LOG = Logger.getLogger(Conflex.class);
 	private static final Map<Class<?>, ConflexPropertyInjector> DEFAULT_TYPE_TO_INJECTOR_MAP;
 
 	static {
 		DEFAULT_TYPE_TO_INJECTOR_MAP = new HashMap<Class<?>, ConflexPropertyInjector>();
-		DEFAULT_TYPE_TO_INJECTOR_MAP.put(String.class, new StringPropertyInjector());
-		DEFAULT_TYPE_TO_INJECTOR_MAP.put(long.class, new LongParserPropertyInjector());
-		DEFAULT_TYPE_TO_INJECTOR_MAP.put(int.class, new IntParserPropertyInjector());
-		DEFAULT_TYPE_TO_INJECTOR_MAP.put(float.class, new FloatParserPropertyInjector());
-		DEFAULT_TYPE_TO_INJECTOR_MAP.put(double.class, new DoubleParserPropertyInjector());
-		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Long.class, new BoxedLongParserPropertyInjector());
-		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Integer.class, new BoxedIntParserPropertyInjector());
-		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Float.class, new BoxedFloatParserPropertyInjector());
-		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Double.class, new BoxedDoubleParserPropertyInjector());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(String.class, new StringInjector());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(boolean.class, new PrimitiveBoolean());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(int.class, new PrimitiveInteger());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(long.class, new PrimitiveLong());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(float.class, new PrimitiveFloat());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(double.class, new PrimitiveDouble());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Boolean.class, new BoxedBoolean());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Integer.class, new BoxedInteger());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Long.class, new BoxedLong());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Float.class, new BoxedFloat());
+		DEFAULT_TYPE_TO_INJECTOR_MAP.put(Double.class, new BoxedDouble());
 	}
 
 	private List<ResolvedProperty> resolvedProperties;
@@ -81,9 +92,7 @@ public class Conflex {
 					rp.injector = injector;
 
 					resolvedProperties.add(rp);
-				} else {
-					LOG.warn("Unable to locate injector for " + field.getType().getCanonicalName());
-				}
+				} 
 			}
 		}
 	}
@@ -116,7 +125,7 @@ public class Conflex {
 	 * @param target The object into which the configuration should be injected.
 	 * @param properties The properties to inject.
 	 */
-	public void inject(Object target, Properties properties) {
+	public void inject(Object target, Properties properties) throws InjectionException {
 		for (ResolvedProperty rp : resolvedProperties) {
 			String value = properties.getProperty(rp.p.key(), rp.p.defaultValue());
 			rp.injector.inject(target, rp.field, value, rp.p.defaultValue());
@@ -135,7 +144,7 @@ public class Conflex {
 	 * @param properties The properties to inject.
 	 */
 	@SuppressWarnings("rawtypes")
-	public void inject(Object target, Map conf) {
+	public void inject(Object target, Map conf) throws InjectionException {
 		for (ResolvedProperty rp : resolvedProperties) {
 			Object value = conf.get(rp.p.key());
 			if (value != null && value instanceof String) {

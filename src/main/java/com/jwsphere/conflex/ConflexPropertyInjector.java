@@ -17,6 +17,6 @@ import java.lang.reflect.Field;
 
 public interface ConflexPropertyInjector {
 
-	void inject(Object target, Field field, String value, String defaultValue);
+	void inject(Object target, Field field, String value, String defaultValue) throws InjectionException;
 	
 }

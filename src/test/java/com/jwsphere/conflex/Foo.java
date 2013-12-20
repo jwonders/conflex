@@ -44,12 +44,20 @@ public final class Foo {
 	private Double bigDoubleValue;
 
 	public Foo(Properties properties) {
-		conflex.inject(this, properties);
+		try {
+			conflex.inject(this, properties);
+		} catch (InjectionException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
 	public Foo(Map conf) {
-		conflex.inject(this, conf);
+		try {
+			conflex.inject(this, conf);
+		} catch (InjectionException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public String getStringValue() {
