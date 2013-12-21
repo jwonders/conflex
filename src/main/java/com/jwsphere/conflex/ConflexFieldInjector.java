@@ -15,8 +15,12 @@ package com.jwsphere.conflex;
 
 import java.lang.reflect.Field;
 
-public interface ConflexPropertyInjector {
-
+/**
+ * A conflex property injector performs the work of injecting a single
+ * value or the associated default value into the target's field.
+ * 
+ * @author jonathan.wonders
+ */
+public interface ConflexFieldInjector {
 	void inject(Object target, Field field, String value, String defaultValue) throws InjectionException;
-	
 }

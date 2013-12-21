@@ -23,7 +23,8 @@ import java.util.Properties;
 import org.junit.Test;
 
 import com.jwsphere.conflex.tools.ConflexAnalyzer;
-import com.jwsphere.conflex.tools.ConflexGenerator;
+import com.jwsphere.conflex.tools.ConflexHadoopConfigurationFileGenerator;
+import com.jwsphere.conflex.tools.ConflexPropertiesFileGenerator;
 
 public class FooTest {
 	
@@ -94,9 +95,13 @@ public class FooTest {
 	
 	@Test
 	public void template() {
-		ConflexGenerator generator = new ConflexGenerator(Foo.class);
-		System.out.println(generator.generatePropertiesFileTemplate());
-		System.out.println(generator.generateHadoopFileTemplate());
+		ConflexPropertiesFileGenerator generator = 
+				new ConflexPropertiesFileGenerator(Foo.class);
+		System.out.println(generator.generate());
+		
+		ConflexHadoopConfigurationFileGenerator hGenerator = 
+				new ConflexHadoopConfigurationFileGenerator(Foo.class);
+		System.out.println(hGenerator.generate());
 	}
 	
 	@Test

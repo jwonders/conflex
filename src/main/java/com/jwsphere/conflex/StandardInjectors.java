@@ -14,10 +14,13 @@
 package com.jwsphere.conflex;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class StandardInjectors {
 
-	public static class StringInjector implements ConflexPropertyInjector {
+	
+	public static class StringInjector implements ConflexFieldInjector, ConflexMethodInjector {
 		@Override
 		public void inject(Object target, Field field, String value, String defaultValue) throws InjectionException {
 			try {
@@ -31,6 +34,24 @@ public class StandardInjectors {
 				throw new InjectionException(e);
 			}
 		}
+		
+		@Override
+		public void inject(Object target, Method method, String value, String defaultValue) throws InjectionException {
+			try {
+				if (!method.isAccessible()) {
+					method.setAccessible(true);
+				}
+				method.invoke(target, value);
+			} catch (IllegalAccessException e) {
+				throw new InjectionException(e);
+			} catch (SecurityException e) {
+				throw new InjectionException(e);
+			} catch (IllegalArgumentException e) {
+				throw new InjectionException(e);
+			} catch (InvocationTargetException e) {
+				throw new InjectionException(e);
+			}
+		}
 	};
 
 	public static class PrimitiveBoolean extends ParserBasedInjector {
@@ -40,6 +61,16 @@ public class StandardInjectors {
 			try {
 				boolean b = Boolean.parseBoolean(value);
 				field.setBoolean(target, b);
+			} catch (Exception e) {
+				throw new ParseException(e);
+			}
+		}
+		@Override
+		protected void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, IllegalAccessException {
+			try {
+				boolean b = Boolean.parseBoolean(value);
+				method.invoke(this, b);
 			} catch (Exception e) {
 				throw new ParseException(e);
 			}
@@ -57,6 +88,16 @@ public class StandardInjectors {
 				throw new ParseException(e);
 			}
 		}
+		@Override
+		protected void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, IllegalAccessException {
+			try {
+				int i = Integer.parseInt(value);
+				method.invoke(target, i);
+			} catch (Exception e) {
+				throw new ParseException(e);
+			}
+		}
 	};
 
 	public static class PrimitiveLong extends ParserBasedInjector {
@@ -66,6 +107,16 @@ public class StandardInjectors {
 			try {
 				long l = Long.parseLong(value);
 				field.setLong(target, l);
+			} catch (Exception e) {
+				throw new ParseException(e);
+			}
+		}
+		@Override
+		protected void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, IllegalAccessException {
+			try {
+				long l = Long.parseLong(value);
+				method.invoke(target, l);
 			} catch (Exception e) {
 				throw new ParseException(e);
 			}
@@ -83,6 +134,16 @@ public class StandardInjectors {
 				throw new ParseException(e);
 			}
 		}
+		@Override
+		protected void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, IllegalAccessException {
+			try {
+				float f = Float.parseFloat(value);
+				method.invoke(target, f);
+			} catch (Exception e) {
+				throw new ParseException(e);
+			}
+		}
 	};
 
 	public static class PrimitiveDouble extends ParserBasedInjector {
@@ -92,6 +153,16 @@ public class StandardInjectors {
 			try {
 				double d = Double.parseDouble(value);
 				field.setDouble(target, d);
+			} catch (Exception e) {
+				throw new ParseException(e);
+			}
+		}
+		@Override
+		protected void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, IllegalAccessException {
+			try {
+				double d = Double.parseDouble(value);
+				method.invoke(target, d);
 			} catch (Exception e) {
 				throw new ParseException(e);
 			}
@@ -109,6 +180,16 @@ public class StandardInjectors {
 				throw new ParseException(e);
 			}
 		}
+		@Override
+		protected void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, IllegalAccessException {
+			try {
+				Boolean b = Boolean.parseBoolean(value);
+				method.invoke(target, b);
+			} catch (Exception e) {
+				throw new ParseException(e);
+			}
+		}
 	};
 
 	public static class BoxedInteger extends ParserBasedInjector {
@@ -118,6 +199,16 @@ public class StandardInjectors {
 			try {
 				Integer i = Integer.parseInt(value);
 				field.set(target, i);
+			} catch (Exception e) {
+				throw new ParseException(e);
+			}
+		}
+		@Override
+		protected void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, IllegalAccessException {
+			try {
+				Integer i = Integer.parseInt(value);
+				method.invoke(target, i);
 			} catch (Exception e) {
 				throw new ParseException(e);
 			}
@@ -135,6 +226,16 @@ public class StandardInjectors {
 				throw new ParseException(e);
 			}
 		}
+		@Override
+		protected void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, IllegalAccessException {
+			try {
+				Long l = Long.parseLong(value);
+				method.invoke(target, l);
+			} catch (Exception e) {
+				throw new ParseException(e);
+			}
+		}
 	};
 
 	public static class BoxedFloat extends ParserBasedInjector {
@@ -148,6 +249,16 @@ public class StandardInjectors {
 				throw new ParseException(e);
 			}
 		}
+		@Override
+		protected void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, IllegalAccessException {
+			try {
+				Float f = Float.parseFloat(value);
+				method.invoke(target, f);
+			} catch (Exception e) {
+				throw new ParseException(e);
+			}
+		}
 	};
 
 	public static class BoxedDouble extends ParserBasedInjector {
@@ -157,6 +268,16 @@ public class StandardInjectors {
 			try {
 				Double d = Double.parseDouble(value);
 				field.set(target, d);
+			} catch (Exception e) {
+				throw new ParseException(e);
+			}
+		}
+		@Override
+		protected void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, IllegalAccessException {
+			try {
+				Double d = Double.parseDouble(value);
+				method.invoke(target, d);
 			} catch (Exception e) {
 				throw new ParseException(e);
 			}
@@ -180,7 +301,7 @@ public class StandardInjectors {
 	 * setting either the value and default value.  To actually set the value
 	 * this class delegates to the particular implementation.
 	 */
-	private static abstract class ParserBasedInjector implements ConflexPropertyInjector {
+	private static abstract class ParserBasedInjector implements ConflexFieldInjector, ConflexMethodInjector {
 		@Override
 		public void inject(Object target, Field field, String value, String defaultValue) throws InjectionException {
 			try {
@@ -200,8 +321,36 @@ public class StandardInjectors {
 				throw new InjectionException("Unable to parse default value.", e);
 			}
 		}
+		
+		@Override
+		public void inject(Object target, Method method, String value, String defaultValue) throws InjectionException {
+			try {
+				if (!method.isAccessible()) {
+					method.setAccessible(true);
+				}
+				try {
+					inject(target, method, value);
+				} catch (ParseException e) {
+					inject(target, method, defaultValue);
+				}
+			} catch (IllegalAccessException e) {
+				throw new InjectionException(e);
+			} catch (SecurityException e) {
+				throw new InjectionException(e);
+			} catch (ParseException e) {
+				throw new InjectionException("Unable to parse default value.", e);
+			} catch (IllegalArgumentException e) {
+				throw new InjectionException(e);
+			} catch (InvocationTargetException e) {
+				throw new InjectionException(e);
+			}
+		}
 
 		protected abstract void inject(Object target, Field field, String value)
 				throws ParseException, IllegalArgumentException, IllegalAccessException;
+		
+		protected abstract void inject(Object target, Method method, String value)
+				throws ParseException, IllegalArgumentException, 
+				IllegalAccessException, InvocationTargetException;
 	};
 }

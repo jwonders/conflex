@@ -13,7 +13,28 @@
 // limitations under the License.
 package com.jwsphere.conflex;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
+
+/**
+ * A Conflex module represents a group of configuration values and can be
+ * used by tools to enhance the generation of documentation and 
+ * configuration file templates.
+ * 
+ * @author jonathan.wonders
+ */
+@Documented
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
 public @interface ConflexModule {
-	String ns();
+	
+	/**
+	 * The description describes a group of properties that are all
+	 * contained within a class definition.
+	 * @return
+	 */
 	String description();
 }
