@@ -30,11 +30,11 @@ import java.lang.annotation.RetentionPolicy;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConflexModule {
-	
-	/**
-	 * The description describes a group of properties that are all
-	 * contained within a class definition.
-	 * @return
-	 */
-	String description();
+
+    /**
+     * The description describes a group of properties that are all
+     * contained within a class definition.
+     * @return
+     */
+    String description();
 }

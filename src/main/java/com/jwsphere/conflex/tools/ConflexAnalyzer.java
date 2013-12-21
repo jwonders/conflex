@@ -31,66 +31,66 @@ import com.jwsphere.conflex.ConflexProperty;
  */
 public class ConflexAnalyzer {
 
-	private Class<?>[] classes;
+    private Class<?>[] classes;
 
-	public ConflexAnalyzer(Class<?> ... classes) {
-		this.classes = classes;
-	}
+    public ConflexAnalyzer(Class<?> ... classes) {
+        this.classes = classes;
+    }
 
-	public Collection<String> findMissingProperties(Properties properties) {
-		Collection<String> missing = new ArrayList<String>();
-		for (ConflexProperty property : Conflex.getAnnotatedProperties(classes)) {
-			if (!properties.containsKey(property.key())) {
-				missing.add(property.key());
-			}
-		}
-		return missing;
-	}
+    public Collection<String> findMissingProperties(Properties properties) {
+        Collection<String> missing = new ArrayList<String>();
+        for (ConflexProperty property : Conflex.getAnnotatedProperties(classes)) {
+            if (!properties.containsKey(property.key())) {
+                missing.add(property.key());
+            }
+        }
+        return missing;
+    }
 
-	@SuppressWarnings("rawtypes")
-	public Collection<String> findMissingProperties(Map conf) {
-		Collection<String> missing = new ArrayList<String>();
-		for (ConflexProperty property : Conflex.getAnnotatedProperties(classes)) {
-			if (!conf.containsKey(property.key())) {
-				missing.add(property.key());
-			}
-		}
-		return missing;
-	}
+    @SuppressWarnings("rawtypes")
+    public Collection<String> findMissingProperties(Map conf) {
+        Collection<String> missing = new ArrayList<String>();
+        for (ConflexProperty property : Conflex.getAnnotatedProperties(classes)) {
+            if (!conf.containsKey(property.key())) {
+                missing.add(property.key());
+            }
+        }
+        return missing;
+    }
 
-	public Collection<String> findExtraProperties(Properties properties) {
-		SortedSet<String> propertyKeys = new TreeSet<String>();
-		for (Object key : properties.keySet()) {
-			if (key instanceof String) {
-				String skey = (String) key;
-				propertyKeys.add(skey);
-			}
-		}
-		return findExtraProperties(propertyKeys);
-	}
+    public Collection<String> findExtraProperties(Properties properties) {
+        SortedSet<String> propertyKeys = new TreeSet<String>();
+        for (Object key : properties.keySet()) {
+            if (key instanceof String) {
+                String skey = (String) key;
+                propertyKeys.add(skey);
+            }
+        }
+        return findExtraProperties(propertyKeys);
+    }
 
-	@SuppressWarnings("rawtypes")
-	public Collection<String> findExtraProperties(Map conf) {
-		SortedSet<String> propertyKeys = new TreeSet<String>();
-		for (Object key : conf.keySet()) {
-			if (key instanceof String) {
-				String skey = (String) key;
-				propertyKeys.add(skey);
-			}
-		}
-		return findExtraProperties(propertyKeys);
-	}
+    @SuppressWarnings("rawtypes")
+    public Collection<String> findExtraProperties(Map conf) {
+        SortedSet<String> propertyKeys = new TreeSet<String>();
+        for (Object key : conf.keySet()) {
+            if (key instanceof String) {
+                String skey = (String) key;
+                propertyKeys.add(skey);
+            }
+        }
+        return findExtraProperties(propertyKeys);
+    }
 
-	private SortedSet<String> findExtraProperties(SortedSet<String> confKeys) {
-		Collection<ConflexProperty> cProperties = 
-				Conflex.getAnnotatedProperties(classes);
+    private SortedSet<String> findExtraProperties(SortedSet<String> confKeys) {
+        Collection<ConflexProperty> cProperties = 
+                Conflex.getAnnotatedProperties(classes);
 
-		SortedSet<String> cPropertyKeys = new TreeSet<String>();
-		for (ConflexProperty property : cProperties) {
-			cPropertyKeys.add(property.key());
-		}
+        SortedSet<String> cPropertyKeys = new TreeSet<String>();
+        for (ConflexProperty property : cProperties) {
+            cPropertyKeys.add(property.key());
+        }
 
-		confKeys.removeAll(cPropertyKeys);
-		return confKeys;
-	}
+        confKeys.removeAll(cPropertyKeys);
+        return confKeys;
+    }
 }

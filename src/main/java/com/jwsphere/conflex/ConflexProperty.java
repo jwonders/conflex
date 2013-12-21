@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConflexProperty {
-	String key();
-	String description() default "";
-	String defaultValue() default "";
+    String key();
+    String description() default "";
+    String defaultValue() default "";
 }

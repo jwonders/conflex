@@ -21,31 +21,31 @@ import java.util.Properties;
  * An example of creating a configuration 
  * 
  * @author jonathan.wonders
-  */
+ */
 public final class Bar {
-	
-	private static Conflex conflex = new Conflex(Bar.class);
-	
-	public static final String FOO_KEY = "foo";
-	
-	private final Map<String, String> dynamicStorage;
-	
-	public Bar(Properties properties) { 
-		this.dynamicStorage = new HashMap<String, String>();
-		try {
-			conflex.inject(this, properties);
-		} catch (InjectionException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public String getFoo() {
-		return dynamicStorage.get(FOO_KEY);
-	}
-	
-	@ConflexProperty(key = FOO_KEY, defaultValue = "default")
-	public void set(String foo) {
-		dynamicStorage.put(FOO_KEY, foo);
-	}
-	
+
+    private static Conflex conflex = new Conflex(Bar.class);
+
+    public static final String FOO_KEY = "foo";
+
+    private final Map<String, String> dynamicStorage;
+
+    public Bar(Properties properties) { 
+        this.dynamicStorage = new HashMap<String, String>();
+        try {
+            conflex.inject(this, properties);
+        } catch (InjectionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getFoo() {
+        return dynamicStorage.get(FOO_KEY);
+    }
+
+    @ConflexProperty(key = FOO_KEY, defaultValue = "default")
+    public void set(String foo) {
+        dynamicStorage.put(FOO_KEY, foo);
+    }
+
 }

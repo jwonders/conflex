@@ -22,5 +22,15 @@ import java.lang.reflect.Field;
  * @author jonathan.wonders
  */
 public interface ConflexFieldInjector {
-	void inject(Object target, Field field, String value, String defaultValue) throws InjectionException;
+
+    /**
+     * Injects a single value into a field in the target object.
+     * 
+     * @param target The object into which the value is to be injected.
+     * @param field The field to inject the value into.
+     * @param value The primary value to inject.
+     * 
+     * @throws InjectionException
+     */
+    void inject(Object target, Field field, String value) throws InjectionException;
 }

@@ -21,67 +21,67 @@ import com.jwsphere.conflex.ConflexProperty;
 
 public final class Foo {
 
-	private static final Conflex conflex = new Conflex(Foo.class);
-	
-	public static final String STRING_KEY = "string_key";
+    private static final Conflex conflex = new Conflex(Foo.class);
 
-	@ConflexProperty(key = STRING_KEY, defaultValue = "default", description = "a string")
-	private String stringValue;
+    public static final String STRING_KEY = "string_key";
 
-	@ConflexProperty(key = "long_key", defaultValue = "0", description = "a long")
-	private long longValue;
+    @ConflexProperty(key = STRING_KEY, defaultValue = "default", description = "a string")
+    private String stringValue;
 
-	@ConflexProperty(key = "int_key", defaultValue = "0", description = "an int")
-	private int intValue;
+    @ConflexProperty(key = "long_key", defaultValue = "0", description = "a long")
+    private long longValue;
 
-	@ConflexProperty(key = "float_key", defaultValue = "0.0", description = "a float")
-	private float floatValue;
+    @ConflexProperty(key = "int_key", defaultValue = "0", description = "an int")
+    private int intValue;
 
-	@ConflexProperty(key = "double_key", defaultValue = "0.0", description = "a double")
-	private double doubleValue;
-	
-	@ConflexProperty(key = "Double_key", defaultValue = "1.0", description = "a Double")
-	private Double bigDoubleValue;
+    @ConflexProperty(key = "float_key", defaultValue = "0.0", description = "a float")
+    private float floatValue;
 
-	public Foo(Properties properties) {
-		try {
-			conflex.inject(this, properties);
-		} catch (InjectionException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @ConflexProperty(key = "double_key", defaultValue = "0.0", description = "a double")
+    private double doubleValue;
 
-	@SuppressWarnings("rawtypes")
-	public Foo(Map conf) {
-		try {
-			conflex.inject(this, conf);
-		} catch (InjectionException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @ConflexProperty(key = "Double_key", defaultValue = "1.0", description = "a Double")
+    private Double bigDoubleValue;
 
-	public String getStringValue() {
-		return stringValue;
-	}
+    public Foo(Properties properties) {
+        try {
+            conflex.inject(this, properties);
+        } catch (InjectionException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public long getLongValue() {
-		return longValue;
-	}
+    @SuppressWarnings("rawtypes")
+    public Foo(Map conf) {
+        try {
+            conflex.inject(this, conf);
+        } catch (InjectionException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public int getIntValue() {
-		return intValue;
-	}
+    public String getStringValue() {
+        return stringValue;
+    }
 
-	public float getFloatValue() {
-		return floatValue;
-	}
+    public long getLongValue() {
+        return longValue;
+    }
 
-	public double getDoubleValue() {
-		return doubleValue;
-	}
+    public int getIntValue() {
+        return intValue;
+    }
 
-	public Double getBigDoubleValue() {
-		return bigDoubleValue;
-	}
-	
+    public float getFloatValue() {
+        return floatValue;
+    }
+
+    public double getDoubleValue() {
+        return doubleValue;
+    }
+
+    public Double getBigDoubleValue() {
+        return bigDoubleValue;
+    }
+
 }
