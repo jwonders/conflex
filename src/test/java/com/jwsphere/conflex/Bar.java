@@ -24,10 +24,10 @@ import java.util.Properties;
  */
 public final class Bar {
 
-    private static Conflex conflex = new Conflex(Bar.class);
+    private static Conflex conflex = Conflex.create(Bar.class);
 
     public static final String FOO_KEY = "foo";
-
+    
     private final Map<String, String> dynamicStorage;
 
     public Bar(Properties properties) { 
@@ -47,5 +47,5 @@ public final class Bar {
     public void set(String foo) {
         dynamicStorage.put(FOO_KEY, foo);
     }
-
+    
 }

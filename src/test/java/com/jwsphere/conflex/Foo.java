@@ -13,6 +13,9 @@
 // limitations under the License.
 package com.jwsphere.conflex;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
 
@@ -21,7 +24,8 @@ import com.jwsphere.conflex.ConflexProperty;
 
 public final class Foo {
 
-    private static final Conflex conflex = new Conflex(Foo.class);
+    private static final Conflex conflex = Conflex.create(Foo.class)
+    		.register(CustomType.class, new CustomInjector());
 
     public static final String STRING_KEY = "string_key";
 
@@ -43,6 +47,9 @@ public final class Foo {
     @ConflexProperty(key = "Double_key", defaultValue = "1.0", description = "a Double")
     private Double bigDoubleValue;
 
+    @ConflexProperty(key = "custom_key", defaultValue = "custom_default", description = "a custom object")
+    private CustomType customValue;
+    
     public Foo(Properties properties) {
         try {
             conflex.inject(this, properties);
@@ -84,4 +91,47 @@ public final class Foo {
         return bigDoubleValue;
     }
 
+    public CustomType getCustomValue() {
+    	return customValue;
+    }
+    
+    public static final class CustomType {
+    	public String value;
+    }
+    
+    public static final class CustomInjector implements ConflexInjector {
+		@Override
+		public void inject(Object target, Field field, String value) throws InjectionException {
+			CustomType object = new CustomType();
+			object.value = value;
+			try {
+				if (!field.isAccessible()) {
+					field.setAccessible(true);
+				}
+				field.set(target, object);
+			} catch (IllegalArgumentException e) {
+				throw new InjectionException(e);
+			} catch (IllegalAccessException e) {
+				throw new InjectionException(e);
+			}
+		}
+
+		@Override
+		public void inject(Object target, Method method, String value) throws InjectionException {
+			CustomType object = new CustomType();
+			object.value = value;
+			try {
+				if (!method.isAccessible()) {
+					method.setAccessible(true);
+				}
+				method.invoke(target, object);
+			} catch (IllegalArgumentException e) {
+				throw new InjectionException(e);
+			} catch (IllegalAccessException e) {
+				throw new InjectionException(e);
+			} catch (InvocationTargetException e) {
+				throw new InjectionException(e);
+			}
+		}
+    }
 }

@@ -11,19 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package com.jwsphere.conflex;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Documented
-@Target({ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ConflexProperty {
-    String key();
-    String description() default "";
-    String defaultValue() default "";
-}
+/**
+ * This package contains tools that operate on conflex annotations.  Tools
+ * can perform analysis of the annotations on the classpath and use the
+ * metadata to generate configuration files, detect duplicates, etc.
+ * 
+ * 
+ * @author jonathan.wonders
+ */
+package com.jwsphere.conflex.tools;

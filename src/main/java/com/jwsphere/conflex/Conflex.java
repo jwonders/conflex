@@ -35,306 +35,259 @@ import com.jwsphere.conflex.StandardInjectors.PrimitiveLong;
 import com.jwsphere.conflex.StandardInjectors.StringInjector;
 
 /**
- * Conflex performs configuration injection using Java's reflection
- * facilities to alleviate the burden of managing large amounts of
- * simple configuration properties across a codebase.
+ * Conflex performs configuration injection using Java's reflection facilities 
+ * to alleviate the burden of managing large amounts of simple configuration 
+ * properties across a codebase.
  *
- * Conflex performs analysis of fields annotated with the {@link ConflexProperty}
- * annotation in order to build a mapping of the configuration object
- * to the class' fields.
+ * Conflex performs analysis of fields annotated with the {@link ConflexProperty} 
+ * annotation in order to build a mapping of the configuration object to the 
+ * class' fields and methods.
  * 
  * @author jonathan.wonders
  */
 public class Conflex {
 
-    private static final ThreadLocal<Map<Class<?>, ConflexFieldInjector>> DEFAULT_FIELD_INJECTOR_MAP;
-    private static final ThreadLocal<Map<Class<?>, ConflexMethodInjector>> DEFAULT_METHOD_INJECTOR_MAP;
+	private static final ThreadLocal<Map<Class<?>, ConflexInjector>> DEFAULT_FIELD_INJECTOR_MAP;
 
-    static {
-        DEFAULT_FIELD_INJECTOR_MAP = new ThreadLocal<Map<Class<?>, ConflexFieldInjector>>() {
-            @Override
-            protected Map<Class<?>, ConflexFieldInjector> initialValue() {
-                Map<Class<?>, ConflexFieldInjector> map = new HashMap<Class<?>, ConflexFieldInjector>();
-                map.put(String.class, new StringInjector());
-                map.put(boolean.class, new PrimitiveBoolean());
-                map.put(int.class, new PrimitiveInteger());
-                map.put(long.class, new PrimitiveLong());
-                map.put(float.class, new PrimitiveFloat());
-                map.put(double.class, new PrimitiveDouble());
-                map.put(Boolean.class, new BoxedBoolean());
-                map.put(Integer.class, new BoxedInteger());
-                map.put(Long.class, new BoxedLong());
-                map.put(Float.class, new BoxedFloat());
-                map.put(Double.class, new BoxedDouble());
-                return map;
-            }
-        };
+	static {
+		DEFAULT_FIELD_INJECTOR_MAP = new ThreadLocal<Map<Class<?>, ConflexInjector>>() {
+			@Override
+			protected Map<Class<?>, ConflexInjector> initialValue() {
+				Map<Class<?>, ConflexInjector> map = new HashMap<Class<?>, ConflexInjector>();
+				map.put(String.class, new StringInjector());
+				map.put(boolean.class, new PrimitiveBoolean());
+				map.put(int.class, new PrimitiveInteger());
+				map.put(long.class, new PrimitiveLong());
+				map.put(float.class, new PrimitiveFloat());
+				map.put(double.class, new PrimitiveDouble());
+				map.put(Boolean.class, new BoxedBoolean());
+				map.put(Integer.class, new BoxedInteger());
+				map.put(Long.class, new BoxedLong());
+				map.put(Float.class, new BoxedFloat());
+				map.put(Double.class, new BoxedDouble());
+				return map;
+			}
+		};
+	}
 
-        DEFAULT_METHOD_INJECTOR_MAP = new ThreadLocal<Map<Class<?>, ConflexMethodInjector>>() {
-            @Override
-            protected Map<Class<?>, ConflexMethodInjector> initialValue() {
-                Map<Class<?>, ConflexMethodInjector> map = new HashMap<Class<?>, ConflexMethodInjector>();
-                map.put(String.class, new StringInjector());
-                map.put(boolean.class, new PrimitiveBoolean());
-                map.put(int.class, new PrimitiveInteger());
-                map.put(long.class, new PrimitiveLong());
-                map.put(float.class, new PrimitiveFloat());
-                map.put(double.class, new PrimitiveDouble());
-                map.put(Boolean.class, new BoxedBoolean());
-                map.put(Integer.class, new BoxedInteger());
-                map.put(Long.class, new BoxedLong());
-                map.put(Float.class, new BoxedFloat());
-                map.put(Double.class, new BoxedDouble());
-                return map;
-            }
-        };
-    }
+	private List<ResolvedProperty> resolvedProperties;
+	private Map<Class<?>, ConflexInjector> injectors;
 
-    private List<ResolvedFieldProperty> resolvedFields;
-    private List<ResolvedMethodProperty> resolvedMethods;
+	private Class<?> clazz;
+	private boolean dirty;
 
-    private Map<Class<?>, ConflexFieldInjector> fieldInjectorMap;
-    private Map<Class<?>, ConflexMethodInjector> methodInjectorMap;
+	public static Conflex create(final Class<?> clazz) {
+		return new Conflex(clazz);
+	}
+	
+	/**
+	 * Constructs a conflex instance capable of injecting configuration
+	 * values into the specified class.  Configuration fields must be
+	 * annotated with the {@link ConflexProperty} annotation.
+	 * 
+	 * @param clazz
+	 */
+	private Conflex(Class<?> clazz) {
+		this.resolvedProperties = new ArrayList<ResolvedProperty>();
+		this.injectors = new HashMap<Class<?>, ConflexInjector>();
+		this.clazz = clazz;
+		this.dirty = true;
+		injectors.putAll(DEFAULT_FIELD_INJECTOR_MAP.get());
+		resolve();
+	}
 
-    /**
-     * Constructs a conflex instance capable of injecting configuration
-     * values into the specified class.  Configuration fields must be
-     * annotated with the {@link ConflexProperty} annotation.
-     * 
-     * @param clazz
-     */
-    public Conflex(Class<?> clazz) {
-        this.resolvedFields = new ArrayList<ResolvedFieldProperty>();
-        this.resolvedMethods = new ArrayList<ResolvedMethodProperty>();
-        this.fieldInjectorMap = new HashMap<Class<?>, ConflexFieldInjector>();
-        fieldInjectorMap.putAll(DEFAULT_FIELD_INJECTOR_MAP.get());
-        this.methodInjectorMap = new HashMap<Class<?>, ConflexMethodInjector>();
-        methodInjectorMap.putAll(DEFAULT_METHOD_INJECTOR_MAP.get());
+	private void resolve() {
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.isAnnotationPresent(ConflexProperty.class)) {
+				ConflexProperty property = field.getAnnotation(ConflexProperty.class);
+				property.key();
 
-        for (Field field : clazz.getDeclaredFields()) {
-            if (field.isAnnotationPresent(ConflexProperty.class)) {
-                ConflexProperty property = field.getAnnotation(ConflexProperty.class);
-                property.key();
+				ConflexInjector injector = injectors.get(field.getType());
 
-                ConflexFieldInjector injector = fieldInjectorMap.get(field.getType());
+				if (injector != null) {
+					ResolvedProperty rp = new ResolvedProperty();
+					rp.p = property;
+					rp.field = field;
+					rp.injector = injector;
 
-                if (injector != null) {
-                    ResolvedFieldProperty rp = new ResolvedFieldProperty();
-                    rp.p = property;
-                    rp.field = field;
-                    rp.injector = injector;
+					resolvedProperties.add(rp);
+				} 
+			}
+		}
 
-                    resolvedFields.add(rp);
-                } 
-            }
-        }
+		for (Method method : clazz.getDeclaredMethods()) {
+			if (method.isAnnotationPresent(ConflexProperty.class) && method.getParameterTypes().length == 1) {
+				ConflexProperty property = method.getAnnotation(ConflexProperty.class);
+				property.key();
 
-        for (Method method : clazz.getDeclaredMethods()) {
-            if (method.isAnnotationPresent(ConflexProperty.class) && method.getParameterTypes().length == 1) {
-                ConflexProperty property = method.getAnnotation(ConflexProperty.class);
-                property.key();
+				Class<?> parameterType = method.getParameterTypes()[0];
 
-                Class<?> parameterType = method.getParameterTypes()[0];
+				ConflexInjector injector = injectors.get(parameterType);
 
-                ConflexMethodInjector injector = methodInjectorMap.get(parameterType);
+				if (injector != null) {
+					ResolvedProperty rp = new ResolvedProperty();
+					rp.p = property;
+					rp.method = method;
+					rp.injector = injector;
 
-                if (injector != null) {
-                    ResolvedMethodProperty rp = new ResolvedMethodProperty();
-                    rp.p = property;
-                    rp.method = method;
-                    rp.injector = injector;
+					resolvedProperties.add(rp);
+				} 
+			}
+		}
 
-                    resolvedMethods.add(rp);
-                } 
-            }
-        }
-    }
+		this.dirty = false;
+	}
 
-    /**
-     * Registers a custom injector for the specified class.  This injector
-     * is used to inject the configuration value for all fields that are
-     * instances of this class.  There is currently no support for specifying
-     * custom injectors on a field-by-field basis.
-     * 
-     * This method must be called before {{@link #inject(...)}
-     * 
-     * @param clazz The type for which this injector should be used.
-     * @param injector The injector to use for the specified type.
-     */
-    public Conflex register(Class<?> clazz, ConflexFieldInjector injector) {
-        if (clazz != null && injector != null) {
-            fieldInjectorMap.put(clazz, injector);
-        }
-        return this;
-    }
+	/**
+	 * Registers a custom injector for the specified class.  This injector
+	 * is used to inject the configuration value for all fields that are
+	 * instances of this class.  There is currently no support for specifying
+	 * custom injectors on a field-by-field basis.
+	 * 
+	 * This method must be called before {{@link #inject(...)}
+	 * 
+	 * @param clazz The type for which this injector should be used.
+	 * @param injector The injector to use for the specified type.
+	 */
+	public Conflex register(Class<?> clazz, ConflexInjector injector) {
+		if (clazz != null && injector != null) {
+			this.dirty = true;
+			injectors.put(clazz, injector);
+		}
+		return this;
+	}
 
-    /**
-     * Registers a custom injector for the specified class.  This injector
-     * is used to inject the configuration value for all fields that are
-     * instances of this class.  There is currently no support for specifying
-     * custom injectors on a field-by-field basis.
-     * 
-     * This method must be called before {{@link #inject(...)}
-     * 
-     * @param clazz The type for which this injector should be used.
-     * @param injector The injector to use for the specified type.
-     */
-    public Conflex register(Class<?> clazz, ConflexMethodInjector injector) {
-        if (clazz != null && injector != null) {
-            methodInjectorMap.put(clazz, injector);
-        }
-        return this;
-    }
+	/**
+	 * For each property field, the corresponding value is extracted from
+	 * the provided properties and given to the injector registered for the
+	 * field's type.
+	 * 
+	 * This method is typically called from the object's constructor.
+	 * 
+	 * @param target The object into which the configuration should be injected.
+	 * @param properties The properties to inject.
+	 */
+	public void inject(Object target, Properties properties) throws InjectionException {
+		if (dirty) {
+			resolve();
+		}
+		for (ResolvedProperty rp : resolvedProperties) {
+			String value = properties.getProperty(rp.p.key(), rp.p.defaultValue());
+			if (value == null) {
+				value = rp.p.defaultValue();
+			}
+			if (rp.field != null) {
+				rp.injector.inject(target, rp.field, value);
+			} else if (rp.method != null) {
+				rp.injector.inject(target, rp.method, value);
+			}
+		}
+	}
 
-    /**
-     * For each property field, the corresponding value is extracted from
-     * the provided properties and given to the injector registered for the
-     * field's type.
-     * 
-     * This method is typically called from the object's constructor.
-     * 
-     * @param target The object into which the configuration should be injected.
-     * @param properties The properties to inject.
-     */
-    public void inject(Object target, Properties properties) throws InjectionException {
-        for (ResolvedFieldProperty rp : resolvedFields) {
-            String value = properties.getProperty(rp.p.key(), rp.p.defaultValue());
-            if (value != null) {
-                rp.injector.inject(target, rp.field, value);
-            } else {
-                rp.injector.inject(target, rp.field, rp.p.defaultValue());
-            }
-        }
-        for (ResolvedMethodProperty rp : resolvedMethods) {
-            String value = properties.getProperty(rp.p.key(), rp.p.defaultValue());
-            if (value != null) {
-                rp.injector.inject(target, rp.method, value);
-            } else {
-                rp.injector.inject(target, rp.method, rp.p.defaultValue());
-            }
-        }
-    }
+	/**
+	 * For each property field, the corresponding value is extracted from
+	 * the provided map and given to the injector registered for the
+	 * field's type.  If the map value is of type java.lang.String, it is
+	 * ignored.
+	 * 
+	 * This method is typically called from the object's constructor.
+	 * 
+	 * @param target The object into which the configuration should be injected.
+	 * @param properties The properties to inject.
+	 */
+	@SuppressWarnings("rawtypes")
+	public void inject(Object target, Map conf) throws InjectionException {
+		if (dirty) {
+			resolve();
+		}
+		for (ResolvedProperty rp : resolvedProperties) {
+			Object object = conf.get(rp.p.key());
+			String value = rp.p.defaultValue();
+			if (object instanceof String) {
+				value = (String) object;
+			}
+			if (rp.field != null) {
+				rp.injector.inject(target, rp.field, value);
+			} else if (rp.method != null) {
+				rp.injector.inject(target, rp.method, value);
+			}
+		}
+	}
 
-    /**
-     * For each property field, the corresponding value is extracted from
-     * the provided map and given to the injector registered for the
-     * field's type.  If the map value is of type java.lang.String, it is
-     * ignored.
-     * 
-     * This method is typically called from the object's constructor.
-     * 
-     * @param target The object into which the configuration should be injected.
-     * @param properties The properties to inject.
-     */
-    @SuppressWarnings("rawtypes")
-    public void inject(Object target, Map conf) throws InjectionException {
-        for (ResolvedFieldProperty rp : resolvedFields) {
-            Object value = conf.get(rp.p.key());
-            if (value instanceof String) {
-                rp.injector.inject(target, rp.field, (String) value);
-            } else {
-                rp.injector.inject(target, rp.field, rp.p.defaultValue());
-            }
-        }
-        for (ResolvedMethodProperty rp : resolvedMethods) {
-            Object value = conf.get(rp.p.key());
-            if (value instanceof String) {
-                rp.injector.inject(target, rp.method, (String) value);
-            } else {
-                rp.injector.inject(target, rp.method, rp.p.defaultValue());
-            }
-        }
-    }
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (ResolvedProperty rp : resolvedProperties) {
+			sb.append("{ key : ").append(rp.p.key()).append(" } ");
+			sb.append("{ description : ").append(rp.p.description()).append(" } ");
+			sb.append("{ type : ").append(rp.field.getType().getCanonicalName()).append(" } ");
+			sb.append("{ default : ").append(rp.p.defaultValue()).append(" }\n");
+		}
+		return sb.toString();
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (ResolvedFieldProperty rp : resolvedFields) {
-            sb.append("{ key : ").append(rp.p.key()).append(" } ");
-            sb.append("{ description : ").append(rp.p.description()).append(" } ");
-            sb.append("{ type : ").append(rp.field.getType().getCanonicalName()).append(" } ");
-            sb.append("{ default : ").append(rp.p.defaultValue()).append(" }\n");
-        }
-        for (ResolvedMethodProperty rp : resolvedMethods) {
-            sb.append("{ key : ").append(rp.p.key()).append(" } ");
-            sb.append("{ description : ").append(rp.p.description()).append(" } ");
-            sb.append("{ type : ").append(rp.method.getParameterTypes()[0].getCanonicalName()).append(" } ");
-            sb.append("{ default : ").append(rp.p.defaultValue()).append(" }\n");
-        }
-        return sb.toString();
-    }
+	/**
+	 * Holds data for a single property field of the class that this
+	 * object is capable of injecting configuration into.
+	 */
+	private static class ResolvedProperty {
+		ConflexProperty p;
+		Field field;
+		Method method;
+		ConflexInjector injector;
+	}
 
-    /**
-     * Holds data for a single property field of the class that this
-     * object is capable of injecting configuration into.
-     */
-    private static class ResolvedFieldProperty {
-        ConflexProperty p;
-        Field field;
-        ConflexFieldInjector injector;
-    }
+	/**
+	 * Returns a collection of the {@link ConflexProperty} annotations present
+	 * within the specified classes.
+	 * 
+	 * @param classes The classes to search for annotations.
+	 * @return A collection of the annotations found.
+	 */
+	public static Collection<ConflexProperty> getAnnotatedProperties(Class<?> ... classes) {
+		Collection<ConflexProperty> properties = new ArrayList<ConflexProperty>();
+		for (Class<?> clazz : classes) {
+			for (Field field : clazz.getDeclaredFields()) {
+				if (field.isAnnotationPresent(ConflexProperty.class)) {
+					ConflexProperty property = field.getAnnotation(ConflexProperty.class);
+					properties.add(property);
+				}
+			}
+			for (Method method : clazz.getDeclaredMethods()) {
+				if (method.isAnnotationPresent(ConflexProperty.class)) {
+					ConflexProperty property = method.getAnnotation(ConflexProperty.class);
+					properties.add(property);
+				}
+			}
+		}
 
-    /**
-     * Holds data for a single property field of the class that this
-     * object is capable of injecting configuration into.
-     */
-    private static class ResolvedMethodProperty {
-        ConflexProperty p;
-        Method method;
-        ConflexMethodInjector injector;
-    }
+		return properties;
+	}
 
-    /**
-     * Returns a collection of the {@link ConflexProperty} annotations present
-     * within the specified classes.
-     * 
-     * @param classes The classes to search for annotations.
-     * @return A collection of the annotations found.
-     */
-    public static Collection<ConflexProperty> getAnnotatedProperties(Class<?> ... classes) {
-        Collection<ConflexProperty> properties = new ArrayList<ConflexProperty>();
-        for (Class<?> clazz : classes) {
-            for (Field field : clazz.getDeclaredFields()) {
-                if (field.isAnnotationPresent(ConflexProperty.class)) {
-                    ConflexProperty property = field.getAnnotation(ConflexProperty.class);
-                    properties.add(property);
-                }
-            }
-            for (Method method : clazz.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(ConflexProperty.class)) {
-                    ConflexProperty property = method.getAnnotation(ConflexProperty.class);
-                    properties.add(property);
-                }
-            }
-        }
-
-        return properties;
-    }
-
-    /**
-     * Returns a collection of the {@link ConflexProperty} annotations present
-     * within the specified classes.
-     * 
-     * @param classes The classes to search for annotations.
-     * @return A collection of the annotations found.
-     */
-    public static Collection<ConflexProperty> getAnnotatedProperties(Iterable<Class<?>> classes) {
-        Collection<ConflexProperty> properties = new ArrayList<ConflexProperty>();
-        for (Class<?> clazz : classes) {
-            for (Field field : clazz.getDeclaredFields()) {
-                if (field.isAnnotationPresent(ConflexProperty.class)) {
-                    ConflexProperty property = field.getAnnotation(ConflexProperty.class);
-                    properties.add(property);
-                }
-            }
-            for (Method method : clazz.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(ConflexProperty.class)) {
-                    ConflexProperty property = method.getAnnotation(ConflexProperty.class);
-                    properties.add(property);
-                }
-            }
-        }
-        return properties;
-    }
+	/**
+	 * Returns a collection of the {@link ConflexProperty} annotations present
+	 * within the specified classes.
+	 * 
+	 * @param classes The classes to search for annotations.
+	 * @return A collection of the annotations found.
+	 */
+	public static Collection<ConflexProperty> getAnnotatedProperties(Iterable<Class<?>> classes) {
+		Collection<ConflexProperty> properties = new ArrayList<ConflexProperty>();
+		for (Class<?> clazz : classes) {
+			for (Field field : clazz.getDeclaredFields()) {
+				if (field.isAnnotationPresent(ConflexProperty.class)) {
+					ConflexProperty property = field.getAnnotation(ConflexProperty.class);
+					properties.add(property);
+				}
+			}
+			for (Method method : clazz.getDeclaredMethods()) {
+				if (method.isAnnotationPresent(ConflexProperty.class)) {
+					ConflexProperty property = method.getAnnotation(ConflexProperty.class);
+					properties.add(property);
+				}
+			}
+		}
+		return properties;
+	}
 
 }
