@@ -46,7 +46,7 @@ class FooServer {
     public static final String PORT_KEY = "port";
 
     public static final String DEFAULT_HOST = "localhost";
-    public static fianl String DEFAULT_PORT = "8080";
+    public static final String DEFAULT_PORT = "8080";
 
     @ConflexProperty(key = HOST_KEY, defaultValue = DEFAULT_HOST,
             description = "The host for the server to bind to.")
