@@ -36,5 +36,12 @@ public @interface ConflexModule {
      * contained within a class definition.
      * @return
      */
-    String description();
+    String description() default "";
+    
+    /**
+     * Reference classes that are conflex-enabled to facilitate aggregating
+     * all of the relevant configuration parameters into groups.
+     * @return
+     */
+    Class<?>[] refs() default {};
 }

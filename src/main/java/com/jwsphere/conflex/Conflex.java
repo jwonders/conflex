@@ -18,15 +18,16 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Set;
 
 import com.jwsphere.conflex.StandardInjectors.BoxedBoolean;
+import com.jwsphere.conflex.StandardInjectors.BoxedDouble;
+import com.jwsphere.conflex.StandardInjectors.BoxedFloat;
 import com.jwsphere.conflex.StandardInjectors.BoxedInteger;
 import com.jwsphere.conflex.StandardInjectors.BoxedLong;
-import com.jwsphere.conflex.StandardInjectors.BoxedFloat;
-import com.jwsphere.conflex.StandardInjectors.BoxedDouble;
 import com.jwsphere.conflex.StandardInjectors.PrimitiveBoolean;
 import com.jwsphere.conflex.StandardInjectors.PrimitiveDouble;
 import com.jwsphere.conflex.StandardInjectors.PrimitiveFloat;
@@ -70,16 +71,17 @@ public class Conflex {
 		};
 	}
 
-	private List<ResolvedProperty> resolvedProperties;
-	private Map<Class<?>, ConflexInjector> injectors;
+	private final List<ResolvedProperty> resolvedProperties;
+	private final Map<Class<?>, ConflexInjector> injectors;
 
-	private Class<?> clazz;
-	private boolean dirty;
+	private final Class<?> clazz;
+	private volatile boolean dirty;
 
 	public static Conflex create(final Class<?> clazz) {
-		return new Conflex(clazz);
+		Conflex conflex = new Conflex(clazz);
+		return conflex;
 	}
-	
+
 	/**
 	 * Constructs a conflex instance capable of injecting configuration
 	 * values into the specified class.  Configuration fields must be
@@ -93,7 +95,6 @@ public class Conflex {
 		this.clazz = clazz;
 		this.dirty = true;
 		injectors.putAll(DEFAULT_FIELD_INJECTOR_MAP.get());
-		resolve();
 	}
 
 	private void resolve() {
@@ -103,14 +104,8 @@ public class Conflex {
 				property.key();
 
 				ConflexInjector injector = injectors.get(field.getType());
-
 				if (injector != null) {
-					ResolvedProperty rp = new ResolvedProperty();
-					rp.p = property;
-					rp.field = field;
-					rp.injector = injector;
-
-					resolvedProperties.add(rp);
+					resolvedProperties.add(new ResolvedProperty(property, field, null, injector));
 				} 
 			}
 		}
@@ -121,16 +116,9 @@ public class Conflex {
 				property.key();
 
 				Class<?> parameterType = method.getParameterTypes()[0];
-
 				ConflexInjector injector = injectors.get(parameterType);
-
 				if (injector != null) {
-					ResolvedProperty rp = new ResolvedProperty();
-					rp.p = property;
-					rp.method = method;
-					rp.injector = injector;
-
-					resolvedProperties.add(rp);
+					resolvedProperties.add(new ResolvedProperty(property, null, method, injector));
 				} 
 			}
 		}
@@ -159,33 +147,6 @@ public class Conflex {
 
 	/**
 	 * For each property field, the corresponding value is extracted from
-	 * the provided properties and given to the injector registered for the
-	 * field's type.
-	 * 
-	 * This method is typically called from the object's constructor.
-	 * 
-	 * @param target The object into which the configuration should be injected.
-	 * @param properties The properties to inject.
-	 */
-	public void inject(Object target, Properties properties) throws InjectionException {
-		if (dirty) {
-			resolve();
-		}
-		for (ResolvedProperty rp : resolvedProperties) {
-			String value = properties.getProperty(rp.p.key(), rp.p.defaultValue());
-			if (value == null) {
-				value = rp.p.defaultValue();
-			}
-			if (rp.field != null) {
-				rp.injector.inject(target, rp.field, value);
-			} else if (rp.method != null) {
-				rp.injector.inject(target, rp.method, value);
-			}
-		}
-	}
-
-	/**
-	 * For each property field, the corresponding value is extracted from
 	 * the provided map and given to the injector registered for the
 	 * field's type.  If the map value is of type java.lang.String, it is
 	 * ignored.
@@ -195,8 +156,7 @@ public class Conflex {
 	 * @param target The object into which the configuration should be injected.
 	 * @param properties The properties to inject.
 	 */
-	@SuppressWarnings("rawtypes")
-	public void inject(Object target, Map conf) throws InjectionException {
+	public <U, V> void inject(Object target, Map<U, V> conf) throws InjectionException {
 		if (dirty) {
 			resolve();
 		}
@@ -235,6 +195,13 @@ public class Conflex {
 		Field field;
 		Method method;
 		ConflexInjector injector;
+
+		ResolvedProperty(ConflexProperty p, Field field, Method method, ConflexInjector injector) {
+			this.p = p;
+			this.field = field;
+			this.method = method;
+			this.injector = injector;
+		}
 	}
 
 	/**
@@ -244,24 +211,8 @@ public class Conflex {
 	 * @param classes The classes to search for annotations.
 	 * @return A collection of the annotations found.
 	 */
-	public static Collection<ConflexProperty> getAnnotatedProperties(Class<?> ... classes) {
-		Collection<ConflexProperty> properties = new ArrayList<ConflexProperty>();
-		for (Class<?> clazz : classes) {
-			for (Field field : clazz.getDeclaredFields()) {
-				if (field.isAnnotationPresent(ConflexProperty.class)) {
-					ConflexProperty property = field.getAnnotation(ConflexProperty.class);
-					properties.add(property);
-				}
-			}
-			for (Method method : clazz.getDeclaredMethods()) {
-				if (method.isAnnotationPresent(ConflexProperty.class)) {
-					ConflexProperty property = method.getAnnotation(ConflexProperty.class);
-					properties.add(property);
-				}
-			}
-		}
-
-		return properties;
+	public static Collection<ConflexProperty> getAnnotatedProperties(final Class<?> ... classes) {
+		return getAnnotatedProperties(toUnique(classes));
 	}
 
 	/**
@@ -271,23 +222,88 @@ public class Conflex {
 	 * @param classes The classes to search for annotations.
 	 * @return A collection of the annotations found.
 	 */
-	public static Collection<ConflexProperty> getAnnotatedProperties(Iterable<Class<?>> classes) {
+	public static Collection<ConflexProperty> getAnnotatedProperties(final Iterable<Class<?>> classes) {
 		Collection<ConflexProperty> properties = new ArrayList<ConflexProperty>();
-		for (Class<?> clazz : classes) {
-			for (Field field : clazz.getDeclaredFields()) {
-				if (field.isAnnotationPresent(ConflexProperty.class)) {
-					ConflexProperty property = field.getAnnotation(ConflexProperty.class);
-					properties.add(property);
-				}
-			}
-			for (Method method : clazz.getDeclaredMethods()) {
-				if (method.isAnnotationPresent(ConflexProperty.class)) {
-					ConflexProperty property = method.getAnnotation(ConflexProperty.class);
-					properties.add(property);
-				}
-			}
+		for (Class<?> clazz : toUnique(classes)) {
+			extractProperties(clazz, properties);
 		}
 		return properties;
 	}
 
+	/**
+	 * Returns a collection of the {@link ConflexProperty} annotations referenced
+	 * either directly within the supplied classes or through transitively 
+	 * evaluated classes identified through {@link ConflexModule#refs()}.
+	 * 
+	 * @param classes
+	 * @return
+	 */
+	public static Set<ConflexProperty> getReferencedProperties(final Class<?> ... classes) {
+		return getReferencedProperties(toUnique(classes));
+	}
+	
+	/**
+	 * Returns a collection of the {@link ConflexProperty} annotations referenced
+	 * either directly within the supplied classes or through transitively 
+	 * evaluated classes identified through {@link ConflexModule#refs()}.
+	 * 
+	 * @param classes
+	 * @return
+	 */
+	public static Set<ConflexProperty> getReferencedProperties(final Iterable<Class<?>> classes) {
+		Set<ConflexProperty> properties = new HashSet<ConflexProperty>();
+		Set<Class<?>> visited = new HashSet<Class<?>>();
+		for (Class<?> clazz : toUnique(classes)) {
+			extractReferencedProperties(clazz, visited, properties);
+		}
+		return properties;
+	}
+	
+	private static void extractReferencedProperties(final Class<?> clazz,
+			final Set<Class<?>> visited, final Set<ConflexProperty> properties) {
+		extractProperties(clazz, properties);
+		visited.add(clazz);
+		if (clazz.isAnnotationPresent(ConflexModule.class)) {
+			ConflexModule module = clazz.getAnnotation(ConflexModule.class);
+			for (Class<?> ref : module.refs()) {
+				if (!visited.contains(ref)) {
+					extractReferencedProperties(ref, visited, properties);
+				}
+			}
+		}
+	}
+	
+	private static void extractProperties(final Class<?> clazz, final Collection<ConflexProperty> properties) {
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.isAnnotationPresent(ConflexProperty.class)) {
+				ConflexProperty property = field.getAnnotation(ConflexProperty.class);
+				properties.add(property);
+			}
+		}
+		for (Method method : clazz.getDeclaredMethods()) {
+			if (method.isAnnotationPresent(ConflexProperty.class)) {
+				ConflexProperty property = method.getAnnotation(ConflexProperty.class);
+				properties.add(property);
+			}
+		}
+	}
+	
+	private static Set<Class<?>> toUnique(Class<?>[] classes) {
+		Set<Class<?>> unique = new HashSet<Class<?>>();
+		for (Class<?> clazz : classes) {
+			unique.add(clazz);
+		}
+		return unique;
+	}
+	
+	private static Set<Class<?>> toUnique(Iterable<Class<?>> classes) {
+		if (classes instanceof Set) {
+			return (Set<Class<?>>) classes;
+		}
+		Set<Class<?>> unique = new HashSet<Class<?>>();
+		for (Class<?> clazz : classes) {
+			unique.add(clazz);
+		}
+		return unique;
+	}
 }

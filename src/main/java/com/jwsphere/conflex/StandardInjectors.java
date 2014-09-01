@@ -14,206 +14,108 @@
 package com.jwsphere.conflex;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public final class StandardInjectors {
 
 	public static class StringInjector extends InjectorBase {
 		@Override
-		public void parseAndInject(Object target, Field field, String value) 
-				throws IllegalArgumentException, IllegalAccessException {
+		public void parseAndInject(Object target, Field field, String value) throws IllegalAccessException {
 			field.set(target, value);
 		}
-
 		@Override
-		public void parseAndInject(Object target, Method method, String value) 
-				throws InjectionException, IllegalAccessException, 
-				IllegalArgumentException, InvocationTargetException {
+		public void parseAndInject(Object target, Method method, String value) throws ReflectiveOperationException {
 			method.invoke(target, value);
 		}
 	}
 
 	public static class PrimitiveBoolean extends InjectorBase {
 		@Override
-		protected void parseAndInject(Object target, Field field, String value)
-				throws ParseException, IllegalAccessException {
-			try {
-				field.setBoolean(target, Boolean.parseBoolean(value));
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected void parseAndInject(Object target, Field field, String value) throws IllegalAccessException {
+			field.setBoolean(target, Boolean.parseBoolean(value));
 		}
 		@Override
-		protected void parseAndInject(Object target, Method method, String value)
-				throws ParseException, IllegalAccessException, 
-				IllegalArgumentException, InvocationTargetException {
-			try {
-				method.invoke(this, Boolean.parseBoolean(value));
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected void parseAndInject(Object target, Method method, String value) throws ReflectiveOperationException {
+			method.invoke(this, Boolean.parseBoolean(value));
 		}
 	}
 
 	public static class PrimitiveInteger extends InjectorBase {
 		@Override
-		protected void parseAndInject(Object target, Field field, String value)
-				throws ParseException, IllegalAccessException {
-			try {
-				field.setInt(target, Integer.parseInt(value));
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected void parseAndInject(Object target, Field field, String value) throws IllegalAccessException {
+			field.setInt(target, Integer.parseInt(value));
 		}
 		@Override
-		protected void parseAndInject(Object target, Method method, String value)
-				throws ParseException, IllegalAccessException, 
-				IllegalArgumentException, InvocationTargetException {
-			try {
-				method.invoke(target, Integer.parseInt(value));
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected void parseAndInject(Object target, Method method, String value) throws ReflectiveOperationException {
+			method.invoke(target, Integer.parseInt(value));
 		}
 	}
 
 	public static class PrimitiveLong extends InjectorBase {
 		@Override
-		protected void parseAndInject(Object target, Field field, String value)
-				throws ParseException, IllegalAccessException {
-			try {
-				long l = Long.parseLong(value);
-				field.setLong(target, l);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected void parseAndInject(Object target, Field field, String value) throws IllegalAccessException {
+			field.setLong(target, Long.parseLong(value));
 		}
 		@Override
-		protected void parseAndInject(Object target, Method method, String value)
-				throws ParseException, IllegalAccessException, 
-				IllegalArgumentException, InvocationTargetException {
-			try {
-				long l = Long.parseLong(value);
-				method.invoke(target, l);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected void parseAndInject(Object target, Method method, String value) throws ReflectiveOperationException {
+			method.invoke(target, Long.parseLong(value));
 		}
 	}
 
 	public static class PrimitiveFloat extends InjectorBase {
 		@Override
-		protected void parseAndInject(Object target, Field field, String value)
-				throws ParseException, IllegalAccessException {
-			try {
-				float f = Float.parseFloat(value);
-				field.setFloat(target, f);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected void parseAndInject(Object target, Field field, String value) throws IllegalAccessException {
+			field.setFloat(target, Float.parseFloat(value));
 		}
 		@Override
-		protected void parseAndInject(Object target, Method method, String value)
-				throws ParseException, IllegalAccessException, 
-				IllegalArgumentException, InvocationTargetException {
-			try {
-				float f = Float.parseFloat(value);
-				method.invoke(target, f);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected void parseAndInject(Object target, Method method, String value) throws ReflectiveOperationException {
+			method.invoke(target, Float.parseFloat(value));
 		}
 	}
 
 	public static class PrimitiveDouble extends InjectorBase {
 		@Override
-		protected void parseAndInject(Object target, Field field, String value)
-				throws ParseException, IllegalAccessException {
-			try {
-				double d = Double.parseDouble(value);
-				field.setDouble(target, d);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected void parseAndInject(Object target, Field field, String value) throws IllegalAccessException {
+			field.setDouble(target, Double.parseDouble(value));
 		}
 		@Override
-		protected void parseAndInject(Object target, Method method, String value)
-				throws ParseException, IllegalAccessException, 
-				IllegalArgumentException, InvocationTargetException {
-			try {
-				double d = Double.parseDouble(value);
-				method.invoke(target, d);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected void parseAndInject(Object target, Method method, String value) throws ReflectiveOperationException {
+			method.invoke(target, Double.parseDouble(value));
 		}
 	}
 
 	public static class BoxedBoolean extends ParserBasedObjectInjector {
 		@Override
-		protected Object parse(String value) throws ParseException {
-			try {
-				return Boolean.parseBoolean(value);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected Object parse(String value) {
+			return Boolean.parseBoolean(value);
 		}
 	}
 
 	public static class BoxedInteger extends ParserBasedObjectInjector {
 		@Override
-		protected Object parse(String value) throws ParseException {
-			try {
-				return Integer.parseInt(value);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected Object parse(String value) {
+			return Integer.parseInt(value);
 		}
 	}
 
 	public static class BoxedLong extends ParserBasedObjectInjector {
 		@Override
-		protected Object parse(String value) throws ParseException {
-			try {
-				return Long.parseLong(value);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected Object parse(String value) {
+			return Long.parseLong(value);
 		}
 	}
 
 	public static class BoxedFloat extends ParserBasedObjectInjector {
 		@Override
-		protected Object parse(String value) throws ParseException {
-			try {
-				return Float.parseFloat(value);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
+		protected Object parse(String value) {
+			return Float.parseFloat(value);
 		}
 	}
 
 	public static class BoxedDouble extends ParserBasedObjectInjector {
 		@Override
-		protected Object parse(String value) throws ParseException {
-			try {
-				return Double.parseDouble(value);
-			} catch (NumberFormatException e) {
-				throw new ParseException(e);
-			}
-		}
-	}
-
-	/**
-	 * An exception to generalize issues related to parsing a String
-	 * as another value type.
-	 */
-	private static class ParseException extends Exception {
-		private static final long serialVersionUID = 1L;
-
-		public ParseException(Throwable cause) {
-			super(cause);
+		protected Object parse(String value) {
+			return Double.parseDouble(value);
 		}
 	}
 
@@ -230,14 +132,12 @@ public final class StandardInjectors {
 					field.setAccessible(true);
 				}
 				parseAndInject(target, field, value);
-			} catch (ParseException e) {
-				throw new InjectionException("Unable to parse value.", e);
-			} catch (IllegalAccessException e) {
-				throw new InjectionException(e);
-			} catch (SecurityException e) {
-				throw new InjectionException(e);
 			} catch (IllegalArgumentException e) {
-				throw new InjectionException(e);
+				throw new InjectionException("Unable to parse value.", e);
+			} catch (ReflectiveOperationException e) {
+				throw new InjectionException("Unable to inject the value", e);
+			} catch (Exception e) {
+				throw new InjectionException("Unanticipated exception during injection.", e);
 			}
 		}
 
@@ -248,26 +148,17 @@ public final class StandardInjectors {
 					method.setAccessible(true);
 				}
 				parseAndInject(target, method, value);
-			} catch (ParseException e) {
-				throw new InjectionException("Unable to parse value.", e);
-			} catch (IllegalAccessException e) {
-				throw new InjectionException(e);
-			} catch (SecurityException e) {
-				throw new InjectionException(e);
 			} catch (IllegalArgumentException e) {
-				throw new InjectionException(e);
-			} catch (InvocationTargetException e) {
-				throw new InjectionException(e);
+				throw new InjectionException("Unable to parse value.", e);
+			} catch (ReflectiveOperationException e) {
+				throw new InjectionException("Unable to inject the value", e);
+			} catch (Exception e) {
+				throw new InjectionException("Unanticipated exception during injection.", e);
 			}
 		}
 
-		protected abstract void parseAndInject(Object target, Field field, String value)
-				throws ParseException, IllegalAccessException;
-
-		protected abstract void parseAndInject(Object target, Method method, String value)
-				throws ParseException, IllegalAccessException, 
-				InvocationTargetException, InjectionException, 
-				IllegalArgumentException;
+		protected abstract void parseAndInject(Object target, Field f, String v) throws IllegalAccessException;
+		protected abstract void parseAndInject(Object target, Method m, String v) throws ReflectiveOperationException;
 	}
 
 	public abstract static class ParserBasedObjectInjector implements ConflexInjector {
@@ -279,12 +170,12 @@ public final class StandardInjectors {
 				}
 				Object object = parse(value);
 				field.set(target, object);
-			} catch (ParseException e) {
-				throw new InjectionException("Unable to parse default value.", e);
 			} catch (IllegalArgumentException e) {
-				throw new InjectionException(e);
-			} catch (IllegalAccessException e) {
-				throw new InjectionException(e);
+				throw new InjectionException("Unable to parse value.", e);
+			} catch (ReflectiveOperationException e) {
+				throw new InjectionException("Unable to inject the value", e);
+			} catch (Exception e) {
+				throw new InjectionException("Unanticipated exception during injection.", e);
 			}
 		}
 
@@ -296,18 +187,16 @@ public final class StandardInjectors {
 				}
 				Object object = parse(value);
 				method.invoke(target, object);
-			} catch (ParseException e) {
-				throw new InjectionException("Unable to parse default value.", e);
-			} catch (IllegalAccessException e) {
-				throw new InjectionException(e);
 			} catch (IllegalArgumentException e) {
-				throw new InjectionException(e);
-			} catch (InvocationTargetException e) {
-				throw new InjectionException(e);
+				throw new InjectionException("Unable to parse value.", e);
+			} catch (ReflectiveOperationException e) {
+				throw new InjectionException("Unable to inject the value", e);
+			} catch (Exception e) {
+				throw new InjectionException("Unanticipated exception during injection.", e);
 			}
 		}
 
-		protected abstract Object parse(String value) throws ParseException;
+		protected abstract Object parse(String value);
 	}
 
 	private StandardInjectors() {

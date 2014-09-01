@@ -58,8 +58,8 @@ public final class Foo {
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    public Foo(Map conf) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public Foo(Map conf) {
         try {
             conflex.inject(this, conf);
         } catch (InjectionException e) {

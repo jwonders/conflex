@@ -13,7 +13,7 @@
 // limitations under the License.
 package com.jwsphere.conflex;
 
-public class InjectionException extends Exception {
+public class InjectionException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 

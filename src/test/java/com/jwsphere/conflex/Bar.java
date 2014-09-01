@@ -15,7 +15,6 @@ package com.jwsphere.conflex;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * An example of creating a configuration 
@@ -30,10 +29,10 @@ public final class Bar {
     
     private final Map<String, String> dynamicStorage;
 
-    public Bar(Properties properties) { 
+    public Bar(Map<?, ?> conf) { 
         this.dynamicStorage = new HashMap<String, String>();
         try {
-            conflex.inject(this, properties);
+            conflex.inject(this, conf);
         } catch (InjectionException e) {
             throw new RuntimeException(e);
         }

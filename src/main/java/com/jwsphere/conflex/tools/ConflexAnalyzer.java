@@ -16,7 +16,6 @@ package com.jwsphere.conflex.tools;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -31,24 +30,21 @@ import com.jwsphere.conflex.ConflexProperty;
  */
 public class ConflexAnalyzer {
 
-    private Class<?>[] classes;
+    private Collection<Class<?>> classes;
 
     public ConflexAnalyzer(Class<?> ... classes) {
-        this.classes = classes;
-    }
-
-    public Collection<String> findMissingProperties(Properties properties) {
-        Collection<String> missing = new ArrayList<String>();
-        for (ConflexProperty property : Conflex.getAnnotatedProperties(classes)) {
-            if (!properties.containsKey(property.key())) {
-                missing.add(property.key());
-            }
+    	this.classes = new ArrayList<Class<?>>(classes.length);
+        for (int i = 0; i < classes.length; ++i) {
+            this.classes.add(classes[i]);
         }
-        return missing;
+    }
+    
+    public ConflexAnalyzer(Collection<Class<?>> classes) {
+    	this.classes = new ArrayList<Class<?>>(classes.size());
+        this.classes.addAll(classes);
     }
 
-    @SuppressWarnings("rawtypes")
-    public Collection<String> findMissingProperties(Map conf) {
+    public <U, V> Collection<String> findMissingProperties(Map<U, V> conf) {
         Collection<String> missing = new ArrayList<String>();
         for (ConflexProperty property : Conflex.getAnnotatedProperties(classes)) {
             if (!conf.containsKey(property.key())) {
@@ -58,24 +54,11 @@ public class ConflexAnalyzer {
         return missing;
     }
 
-    public Collection<String> findExtraProperties(Properties properties) {
-        SortedSet<String> propertyKeys = new TreeSet<String>();
-        for (Object key : properties.keySet()) {
-            if (key instanceof String) {
-                String skey = (String) key;
-                propertyKeys.add(skey);
-            }
-        }
-        return findExtraProperties(propertyKeys);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public Collection<String> findExtraProperties(Map conf) {
+    public <U, V> Collection<String> findExtraProperties(Map<U, V> conf) {
         SortedSet<String> propertyKeys = new TreeSet<String>();
         for (Object key : conf.keySet()) {
             if (key instanceof String) {
-                String skey = (String) key;
-                propertyKeys.add(skey);
+                propertyKeys.add((String) key);
             }
         }
         return findExtraProperties(propertyKeys);

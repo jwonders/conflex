@@ -79,6 +79,45 @@ public class FooTest {
         assertEquals(9.5, foo.getDoubleValue(), 1e-6);
         assertEquals("custom_value", foo.getCustomValue().value);
     }
+    
+    @Test
+    public void injectObjectMap() {
+        Map<Object, Object> conf = new HashMap<Object, Object>();
+        conf.put("string_key", "string_value");
+        conf.put("long_key", "10");
+        conf.put("int_key", "100");
+        conf.put("float_key", "4.5");
+        conf.put("double_key", "9.5");
+        conf.put("custom_key", "custom_value");
+
+        Foo foo = new Foo(conf);
+        assertEquals("string_value", foo.getStringValue());
+        assertEquals(10l, foo.getLongValue());
+        assertEquals(100, foo.getIntValue());
+        assertEquals(4.5, foo.getFloatValue(), 1e-6);
+        assertEquals(9.5, foo.getDoubleValue(), 1e-6);
+        assertEquals("custom_value", foo.getCustomValue().value);
+    }
+    
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test
+    public void injectRawMap() {
+        Map conf = new HashMap();
+        conf.put("string_key", "string_value");
+        conf.put("long_key", "10");
+        conf.put("int_key", "100");
+        conf.put("float_key", "4.5");
+        conf.put("double_key", "9.5");
+        conf.put("custom_key", "custom_value");
+
+        Foo foo = new Foo(conf);
+        assertEquals("string_value", foo.getStringValue());
+        assertEquals(10l, foo.getLongValue());
+        assertEquals(100, foo.getIntValue());
+        assertEquals(4.5, foo.getFloatValue(), 1e-6);
+        assertEquals(9.5, foo.getDoubleValue(), 1e-6);
+        assertEquals("custom_value", foo.getCustomValue().value);
+    }
 
     @Test
     public void injectMapDefault() {
