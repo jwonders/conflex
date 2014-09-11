@@ -34,6 +34,7 @@ import com.jwsphere.conflex.StandardInjectors.PrimitiveFloat;
 import com.jwsphere.conflex.StandardInjectors.PrimitiveInteger;
 import com.jwsphere.conflex.StandardInjectors.PrimitiveLong;
 import com.jwsphere.conflex.StandardInjectors.StringInjector;
+import com.jwsphere.conflex.StandardInjectors.EnumInjector;
 
 /**
  * Conflex performs configuration injection using Java's reflection facilities 
@@ -66,6 +67,7 @@ public class Conflex {
 				map.put(Long.class, new BoxedLong());
 				map.put(Float.class, new BoxedFloat());
 				map.put(Double.class, new BoxedDouble());
+                map.put(Enum.class, new EnumInjector());
 				return map;
 			}
 		};
@@ -103,7 +105,7 @@ public class Conflex {
 				ConflexProperty property = field.getAnnotation(ConflexProperty.class);
 				property.key();
 
-				ConflexInjector injector = injectors.get(field.getType());
+                ConflexInjector injector = field.getType().isEnum() ? injectors.get(Enum.class) : injectors.get(field.getType());
 				if (injector != null) {
 					resolvedProperties.add(new ResolvedProperty(property, field, null, injector));
 				} 
@@ -116,7 +118,7 @@ public class Conflex {
 				property.key();
 
 				Class<?> parameterType = method.getParameterTypes()[0];
-				ConflexInjector injector = injectors.get(parameterType);
+                ConflexInjector injector = parameterType.isEnum() ? injectors.get(Enum.class) : injectors.get(parameterType);
 				if (injector != null) {
 					resolvedProperties.add(new ResolvedProperty(property, null, method, injector));
 				} 
