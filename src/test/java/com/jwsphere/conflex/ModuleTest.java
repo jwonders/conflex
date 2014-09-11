@@ -11,7 +11,7 @@ public class ModuleTest {
 	@Test
 	public void test() {
 		Set<ConflexProperty> properties = Conflex.getReferencedProperties(Module.class);
-		assertEquals(8, properties.size());
+        assertEquals(9, properties.size());
 		for (ConflexProperty property : properties) {
 			System.out.println(property);
 		}

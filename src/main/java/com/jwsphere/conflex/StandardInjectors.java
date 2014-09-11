@@ -83,6 +83,21 @@ public final class StandardInjectors {
 			method.invoke(target, Double.parseDouble(value));
 		}
 	}
+	
+	public static class EnumInjector extends InjectorBase {
+	    @SuppressWarnings({ "unchecked", "rawtypes" })
+        @Override
+	    protected void parseAndInject(Object target, Field field, String value) throws IllegalAccessException {
+	        field.set(target, Enum.valueOf((Class<Enum>) field.getType(), value));
+	    }
+
+	    @SuppressWarnings({ "unchecked", "rawtypes" })
+	    @Override
+	    protected void parseAndInject(Object target, Method method, String value) throws ReflectiveOperationException {
+	        method.invoke(target, Enum.valueOf((Class<Enum>) method.getParameterTypes()[0], value));
+	    }
+
+	}
 
 	public static class BoxedBoolean extends ParserBasedObjectInjector {
 		@Override

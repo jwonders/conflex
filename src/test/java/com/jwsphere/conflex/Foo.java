@@ -50,6 +50,9 @@ public final class Foo {
     @ConflexProperty(key = "custom_key", defaultValue = "custom_default", description = "a custom object")
     private CustomType customValue;
     
+    @ConflexProperty(key = "enum_key", defaultValue = "DEFAULT", description = "a custom enum setting")
+    private CustomEnum customEnum;
+
     public Foo(Properties properties) {
         try {
             conflex.inject(this, properties);
@@ -95,10 +98,19 @@ public final class Foo {
     	return customValue;
     }
     
+    public CustomEnum getCustomEnumValue() {
+        return customEnum;
+    }
+
     public static final class CustomType {
     	public String value;
     }
     
+    public static enum CustomEnum {
+        TYPE1,
+        DEFAULT
+    }
+
     public static final class CustomInjector implements ConflexInjector {
 		@Override
 		public void inject(Object target, Field field, String value) throws InjectionException {

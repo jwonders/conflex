@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.junit.Test;
 
+import com.jwsphere.conflex.Foo.CustomEnum;
 import com.jwsphere.conflex.tools.ConflexAnalyzer;
 import com.jwsphere.conflex.tools.ConflexHadoopConfigurationFileGenerator;
 import com.jwsphere.conflex.tools.ConflexPropertiesFileGenerator;
@@ -38,6 +39,7 @@ public class FooTest {
         p.put("double_key", "9.5");
         p.put("Double_key", "5.8");
         p.put("custom_key", "custom_value");
+        p.put("enum_key", "TYPE1");
 
         Foo foo = new Foo(p);
         assertEquals("string_value", foo.getStringValue());
@@ -47,6 +49,7 @@ public class FooTest {
         assertEquals(9.5, foo.getDoubleValue(), 1e-6);
         assertEquals(5.8, foo.getBigDoubleValue(), 1e-6);
         assertEquals("custom_value", foo.getCustomValue().value);
+        assertEquals(CustomEnum.TYPE1, foo.getCustomEnumValue());
     }
 
     @Test
@@ -59,6 +62,7 @@ public class FooTest {
         assertEquals(0.0, foo.getFloatValue(), 1e-6);
         assertEquals(0.0, foo.getDoubleValue(), 1e-6);
         assertEquals("custom_default", foo.getCustomValue().value);
+        assertEquals(CustomEnum.DEFAULT, foo.getCustomEnumValue());
     }
 
     @Test
@@ -70,6 +74,7 @@ public class FooTest {
         conf.put("float_key", "4.5");
         conf.put("double_key", "9.5");
         conf.put("custom_key", "custom_value");
+        conf.put("enum_key", "TYPE1");
 
         Foo foo = new Foo(conf);
         assertEquals("string_value", foo.getStringValue());
@@ -78,6 +83,7 @@ public class FooTest {
         assertEquals(4.5, foo.getFloatValue(), 1e-6);
         assertEquals(9.5, foo.getDoubleValue(), 1e-6);
         assertEquals("custom_value", foo.getCustomValue().value);
+        assertEquals(CustomEnum.TYPE1, foo.getCustomEnumValue());
     }
     
     @Test
@@ -89,6 +95,7 @@ public class FooTest {
         conf.put("float_key", "4.5");
         conf.put("double_key", "9.5");
         conf.put("custom_key", "custom_value");
+        conf.put("enum_key", "TYPE1");
 
         Foo foo = new Foo(conf);
         assertEquals("string_value", foo.getStringValue());
@@ -97,6 +104,7 @@ public class FooTest {
         assertEquals(4.5, foo.getFloatValue(), 1e-6);
         assertEquals(9.5, foo.getDoubleValue(), 1e-6);
         assertEquals("custom_value", foo.getCustomValue().value);
+        assertEquals(CustomEnum.TYPE1, foo.getCustomEnumValue());
     }
     
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -109,6 +117,7 @@ public class FooTest {
         conf.put("float_key", "4.5");
         conf.put("double_key", "9.5");
         conf.put("custom_key", "custom_value");
+        conf.put("enum_key", "TYPE1");
 
         Foo foo = new Foo(conf);
         assertEquals("string_value", foo.getStringValue());
@@ -117,6 +126,7 @@ public class FooTest {
         assertEquals(4.5, foo.getFloatValue(), 1e-6);
         assertEquals(9.5, foo.getDoubleValue(), 1e-6);
         assertEquals("custom_value", foo.getCustomValue().value);
+        assertEquals(CustomEnum.TYPE1, foo.getCustomEnumValue());
     }
 
     @Test
@@ -130,6 +140,7 @@ public class FooTest {
         assertEquals(0.0, foo.getFloatValue(), 1e-6);
         assertEquals(0.0, foo.getDoubleValue(), 1e-6);
         assertEquals("custom_default", foo.getCustomValue().value);
+        assertEquals(CustomEnum.DEFAULT, foo.getCustomEnumValue());
     }
 
     @Test
@@ -158,6 +169,7 @@ public class FooTest {
         conf.put("float_key", "4.5");
         conf.put("double_key", "9.5");
         conf.put("custom_key", "custom_value");
+        conf.put("enum_key", "TYPE1");
 
         ConflexAnalyzer analyzer = new ConflexAnalyzer(Foo.class);
         Collection<String> missing = analyzer.findMissingProperties(conf);
@@ -178,6 +190,7 @@ public class FooTest {
         conf.put("float_key", "4.5");
         conf.put("double_key", "9.5");
         conf.put("custom_key", "custom_value");
+        conf.put("enum_key", "TYPE1");
         conf.put("extra_key", "extra_value");
 
         ConflexAnalyzer analyzer = new ConflexAnalyzer(Foo.class);
