@@ -10,6 +10,18 @@ Goals of conflex include the following :
 3. Facilitate validating configuration files and diagnosing potential errors.
 4. Minimize boilerplate code (e.g. parsing logic)
 
+## Maven Coordinates
+
+Conflex is available on [maven central](http://search.maven.org/#artifactdetails%7Ccom.jwsphere%7Cconflex%7C0.0.1%7Cjar).  Add the following snippet to the dependencies section of your `pom.xml` file.
+
+```
+<dependency>
+    <groupId>com.jwsphere</groupId>
+    <artifactId>conflex</artifactId>
+    <version>0.0.1</version>
+</dependency>
+```
+
 ## Simple Example
 The following example shows how application configuration might be achieved with and without conflex.  Both solutions have essentially the same number of lines of code.  The conflex solution provides the benefit that annotation processors can inspect the available configuration and perform a number of useful tasks such as configuration validation, documentation generation, and default configuration file generation.
 
