@@ -85,7 +85,7 @@ public class FooTest {
         assertEquals("custom_value", foo.getCustomValue().value);
         assertEquals(CustomEnum.TYPE1, foo.getCustomEnumValue());
     }
-    
+
     @Test
     public void injectObjectMap() {
         Map<Object, Object> conf = new HashMap<Object, Object>();
@@ -106,9 +106,9 @@ public class FooTest {
         assertEquals("custom_value", foo.getCustomValue().value);
         assertEquals(CustomEnum.TYPE1, foo.getCustomEnumValue());
     }
-    
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
-	@Test
+    @Test
     public void injectRawMap() {
         Map conf = new HashMap();
         conf.put("string_key", "string_value");

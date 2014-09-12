@@ -20,4 +20,3 @@
  * @author jonathan.wonders
  */
 package com.jwsphere.conflex;
-

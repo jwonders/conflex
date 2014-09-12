@@ -33,14 +33,14 @@ public class ConflexAnalyzer {
     private Collection<Class<?>> classes;
 
     public ConflexAnalyzer(Class<?> ... classes) {
-    	this.classes = new ArrayList<Class<?>>(classes.length);
+        this.classes = new ArrayList<Class<?>>(classes.length);
         for (int i = 0; i < classes.length; ++i) {
             this.classes.add(classes[i]);
         }
     }
-    
+
     public ConflexAnalyzer(Collection<Class<?>> classes) {
-    	this.classes = new ArrayList<Class<?>>(classes.size());
+        this.classes = new ArrayList<Class<?>>(classes.size());
         this.classes.addAll(classes);
     }
 

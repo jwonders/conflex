@@ -34,7 +34,7 @@ public interface ConflexInjector {
      * @throws InjectionException
      */
     void inject(Object target, Field field, String value) throws InjectionException;
-    
+
     /**
      * Injects a single value by invoking a setter method in the target object.
      * 

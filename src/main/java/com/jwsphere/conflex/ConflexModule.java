@@ -37,7 +37,7 @@ public @interface ConflexModule {
      * @return
      */
     String description() default "";
-    
+
     /**
      * Reference classes that are conflex-enabled to facilitate aggregating
      * all of the relevant configuration parameters into groups.

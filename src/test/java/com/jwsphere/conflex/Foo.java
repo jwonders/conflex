@@ -25,7 +25,7 @@ import com.jwsphere.conflex.ConflexProperty;
 public final class Foo {
 
     private static final Conflex conflex = Conflex.create(Foo.class)
-    		.register(CustomType.class, new CustomInjector());
+            .register(CustomType.class, new CustomInjector());
 
     public static final String STRING_KEY = "string_key";
 
@@ -49,25 +49,17 @@ public final class Foo {
 
     @ConflexProperty(key = "custom_key", defaultValue = "custom_default", description = "a custom object")
     private CustomType customValue;
-    
+
     @ConflexProperty(key = "enum_key", defaultValue = "DEFAULT", description = "a custom enum setting")
     private CustomEnum customEnum;
 
     public Foo(Properties properties) {
-        try {
-            conflex.inject(this, properties);
-        } catch (InjectionException e) {
-            throw new RuntimeException(e);
-        }
+        conflex.inject(this, properties);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	public Foo(Map conf) {
-        try {
-            conflex.inject(this, conf);
-        } catch (InjectionException e) {
-            throw new RuntimeException(e);
-        }
+    public Foo(Map conf) {
+        conflex.inject(this, conf);
     }
 
     public String getStringValue() {
@@ -95,55 +87,55 @@ public final class Foo {
     }
 
     public CustomType getCustomValue() {
-    	return customValue;
+        return customValue;
     }
-    
+
     public CustomEnum getCustomEnumValue() {
         return customEnum;
     }
 
     public static final class CustomType {
-    	public String value;
+        public String value;
     }
-    
+
     public static enum CustomEnum {
         TYPE1,
         DEFAULT
     }
 
     public static final class CustomInjector implements ConflexInjector {
-		@Override
-		public void inject(Object target, Field field, String value) throws InjectionException {
-			CustomType object = new CustomType();
-			object.value = value;
-			try {
-				if (!field.isAccessible()) {
-					field.setAccessible(true);
-				}
-				field.set(target, object);
-			} catch (IllegalArgumentException e) {
-				throw new InjectionException(e);
-			} catch (IllegalAccessException e) {
-				throw new InjectionException(e);
-			}
-		}
+        @Override
+        public void inject(Object target, Field field, String value) throws InjectionException {
+            CustomType object = new CustomType();
+            object.value = value;
+            try {
+                if (!field.isAccessible()) {
+                    field.setAccessible(true);
+                }
+                field.set(target, object);
+            } catch (IllegalArgumentException e) {
+                throw new InjectionException(e);
+            } catch (IllegalAccessException e) {
+                throw new InjectionException(e);
+            }
+        }
 
-		@Override
-		public void inject(Object target, Method method, String value) throws InjectionException {
-			CustomType object = new CustomType();
-			object.value = value;
-			try {
-				if (!method.isAccessible()) {
-					method.setAccessible(true);
-				}
-				method.invoke(target, object);
-			} catch (IllegalArgumentException e) {
-				throw new InjectionException(e);
-			} catch (IllegalAccessException e) {
-				throw new InjectionException(e);
-			} catch (InvocationTargetException e) {
-				throw new InjectionException(e);
-			}
-		}
+        @Override
+        public void inject(Object target, Method method, String value) throws InjectionException {
+            CustomType object = new CustomType();
+            object.value = value;
+            try {
+                if (!method.isAccessible()) {
+                    method.setAccessible(true);
+                }
+                method.invoke(target, object);
+            } catch (IllegalArgumentException e) {
+                throw new InjectionException(e);
+            } catch (IllegalAccessException e) {
+                throw new InjectionException(e);
+            } catch (InvocationTargetException e) {
+                throw new InjectionException(e);
+            }
+        }
     }
 }

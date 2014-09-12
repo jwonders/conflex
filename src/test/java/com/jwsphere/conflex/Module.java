@@ -8,21 +8,21 @@ import java.util.Map;
  */
 @ConflexModule(refs = {Foo.class, Bar.class})
 public class Module {
-	
-	private Foo foo; 
-	private Bar bar;
-	
-	public Module(Map<?, ?> conf) { 
-		this.foo = new Foo(conf);
-		this.bar = new Bar(conf);
-	}
-	
-	public Foo getFoo() {
-		return foo;
-	}
-	
-	public Bar getBar() {
-		return bar;
-	}
-	
+
+    private Foo foo; 
+    private Bar bar;
+
+    public Module(Map<?, ?> conf) { 
+        this.foo = new Foo(conf);
+        this.bar = new Bar(conf);
+    }
+
+    public Foo getFoo() {
+        return foo;
+    }
+
+    public Bar getBar() {
+        return bar;
+    }
+
 }
