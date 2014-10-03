@@ -141,7 +141,7 @@ public class Conflex {
      * @param clazz The type for which this injector should be used.
      * @param injector The injector to use for the specified type.
      */
-    public Conflex register(Class<?> clazz, ConflexInjector injector) {
+    public synchronized Conflex register(Class<?> clazz, ConflexInjector injector) {
         if (clazz != null && injector != null) {
             this.dirty = true;
             injectors.put(clazz, injector);
@@ -160,7 +160,7 @@ public class Conflex {
      * @param target The object into which the configuration should be injected.
      * @param properties The properties to inject.
      */
-    public <U, V> void inject(Object target, Map<U, V> conf) throws InjectionException {
+    public synchronized <U, V> void inject(Object target, Map<U, V> conf) throws InjectionException {
         if (dirty) {
             resolve();
         }
@@ -179,7 +179,7 @@ public class Conflex {
     }
 
     @Override
-    public String toString() {
+    public synchronized String toString() {
         StringBuilder sb = new StringBuilder();
         for (ResolvedProperty rp : resolvedProperties) {
             sb.append("{ key : ").append(rp.p.key()).append(" } ");
