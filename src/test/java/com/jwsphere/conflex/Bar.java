@@ -23,16 +23,25 @@ import java.util.Map;
  */
 public final class Bar {
 
-    private static Conflex conflex = Conflex.create(Bar.class);
-
+    private static final ThreadLocal<Conflex> conflex = new ThreadLocal<Conflex>() {
+        @Override
+        protected Conflex initialValue() {
+            return Conflex.create(Bar.class);
+        }
+    };
+    
     public static final String FOO_KEY = "foo";
 
     private final Map<String, String> dynamicStorage;
 
     public Bar(Map<?, ?> conf) { 
+        this(conf, "");
+    }
+    
+    public Bar(Map<?, ?> conf, String prefix) { 
         this.dynamicStorage = new HashMap<String, String>();
         try {
-            conflex.inject(this, conf);
+            conflex.get().prefix(prefix).inject(this, conf);
         } catch (InjectionException e) {
             throw new RuntimeException(e);
         }

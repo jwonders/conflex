@@ -24,8 +24,29 @@ import com.jwsphere.conflex.ConflexProperty;
 
 public final class Foo {
 
-    private static final Conflex conflex = Conflex.create(Foo.class)
-            .register(CustomType.class, new CustomInjector());
+    /**
+     * Static instances of conflex are synchronized for use in multi-threaded
+     * environments but if different prefixes need to be set in different threads
+     * for the same configuration class, external synchronization is required.  In
+     * this case it is advised to use thread-local instances.
+     */
+    // private static final Conflex conflex = 
+    // Conflex.create(Foo.class).register(CustomType.class, new CustomInjector());
+    
+    /**
+     * Using thread-local conflex instances achieves much higher performance of
+     * injection compared to instantiating a conflex instance for each injection
+     * and is safe to use in multi-threaded environments.
+     * 
+     * Performance is only noticible when constructing MANY instances of configuration
+     * classes.  This is rarely the case and if it is, you should re-consider the design.
+     */
+    private static final ThreadLocal<Conflex> conflex = new ThreadLocal<Conflex>() {
+        @Override
+        protected Conflex initialValue() {
+            return Conflex.create(Foo.class).register(CustomType.class, new CustomInjector());
+        }
+    };
 
     public static final String STRING_KEY = "string_key";
 
@@ -54,12 +75,11 @@ public final class Foo {
     private CustomEnum customEnum;
 
     public Foo(Properties properties) {
-        conflex.inject(this, properties);
+        conflex.get().inject(this, properties);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Foo(Map conf) {
-        conflex.inject(this, conf);
+    public Foo(Map<?, ?> conf) {
+        conflex.get().inject(this, conf);
     }
 
     public String getStringValue() {

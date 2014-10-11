@@ -75,6 +75,7 @@ public class Conflex {
 
     private final List<ResolvedProperty> resolvedProperties;
     private final Map<Class<?>, ConflexInjector> injectors;
+    private String prefix;
 
     private final Class<?> clazz;
     private volatile boolean dirty;
@@ -95,6 +96,7 @@ public class Conflex {
         this.resolvedProperties = new ArrayList<ResolvedProperty>();
         this.injectors = new HashMap<Class<?>, ConflexInjector>();
         this.clazz = clazz;
+        this.prefix = "";
         this.dirty = true;
         injectors.putAll(DEFAULT_FIELD_INJECTOR_MAP.get());
     }
@@ -129,6 +131,25 @@ public class Conflex {
 
         this.dirty = false;
     }
+    
+    /**
+     * Sets a custom key prefix that will be used to retrieve configuration values
+     * from the input (e.g. if the ConflexProperty key is "key" and the prefix
+     * for this conflex instance is set to "prefix.", the inject method will search
+     * for the value associated with key "prefix.key".
+     * 
+     * To support a multi-threaded environment, the configuration class using conflex
+     * is responsible for ensuring correct synchronization between the prefix and inject
+     * method.  This can be achieved through external synchronization, by using thread-
+     * local instances of conflex, or constructing a new instance each time it is used.
+     * 
+     * @param prefix - The prefix to use for associating key-values pairs with fields
+     * annotated with {@link ConflexProperty}
+     */
+    public synchronized Conflex prefix(String prefix) {
+        this.prefix = prefix;
+        return this;
+    }
 
     /**
      * Registers a custom injector for the specified class.  This injector
@@ -141,7 +162,7 @@ public class Conflex {
      * @param clazz The type for which this injector should be used.
      * @param injector The injector to use for the specified type.
      */
-    public Conflex register(Class<?> clazz, ConflexInjector injector) {
+    public synchronized Conflex register(Class<?> clazz, ConflexInjector injector) {
         if (clazz != null && injector != null) {
             this.dirty = true;
             injectors.put(clazz, injector);
@@ -160,12 +181,12 @@ public class Conflex {
      * @param target The object into which the configuration should be injected.
      * @param properties The properties to inject.
      */
-    public <U, V> void inject(Object target, Map<U, V> conf) throws InjectionException {
+    public synchronized <U, V> void inject(Object target, Map<U, V> conf) throws InjectionException {
         if (dirty) {
             resolve();
         }
         for (ResolvedProperty rp : resolvedProperties) {
-            Object object = conf.get(rp.p.key());
+            Object object = conf.get(prefix + rp.p.key());
             String value = rp.p.defaultValue();
             if (object instanceof String) {
                 value = (String) object;
@@ -179,7 +200,7 @@ public class Conflex {
     }
 
     @Override
-    public String toString() {
+    public synchronized String toString() {
         StringBuilder sb = new StringBuilder();
         for (ResolvedProperty rp : resolvedProperties) {
             sb.append("{ key : ").append(rp.p.key()).append(" } ");

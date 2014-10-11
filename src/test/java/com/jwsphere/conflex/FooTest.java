@@ -15,8 +15,10 @@ package com.jwsphere.conflex;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -200,6 +202,38 @@ public class FooTest {
         System.out.println("Extra properties");
         for (String e : extra) {
             System.out.println(e);	
+        }
+    }
+
+    @Test
+    public void injectPerformance() {
+        Map<String, String> conf = new HashMap<String, String>();
+        conf.put("string_key", "string_value");
+        conf.put("long_key", "10");
+        conf.put("int_key", "100");
+        conf.put("float_key", "4.5");
+        conf.put("double_key", "9.5");
+        conf.put("custom_key", "custom_value");
+        conf.put("enum_key", "TYPE1");
+
+        List<Foo> foos = new ArrayList<Foo>(100000);
+
+        long nanos = System.nanoTime();
+        for (int i = 0; i < 100000; ++i) {
+            foos.add(new Foo(conf));
+        }
+        double duration = System.nanoTime() - nanos;
+        double ms = duration / (1e6);
+        System.out.println(ms + "ms to instantiate 100000 Foo instances");
+
+        for (Foo foo : foos) {
+            assertEquals("string_value", foo.getStringValue());
+            assertEquals(10l, foo.getLongValue());
+            assertEquals(100, foo.getIntValue());
+            assertEquals(4.5, foo.getFloatValue(), 1e-6);
+            assertEquals(9.5, foo.getDoubleValue(), 1e-6);
+            assertEquals("custom_value", foo.getCustomValue().value);
+            assertEquals(CustomEnum.TYPE1, foo.getCustomEnumValue());
         }
     }
 
