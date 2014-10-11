@@ -3,7 +3,7 @@
 
 	<groupId>com.jwsphere</groupId>
 	<artifactId>conflex</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Conflex</name>
@@ -22,7 +22,7 @@
 		<url>https://github.com/jwonders/conflex</url>
 		<connection>scm:git:git://github.com/jwonders/conflex.git</connection>
 		<developerConnection>scm:git:git@github.com:jwonders/conflex.git</developerConnection>
-	  <tag>conflex-0.0.2</tag>
+	  <tag>HEAD</tag>
   </scm>
 
 	<licenses>
