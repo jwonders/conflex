@@ -13,8 +13,14 @@
 // limitations under the License.
 package com.jwsphere.conflex;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,18 +29,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.jwsphere.conflex.StandardInjectors.BigDecimalInjector;
+import com.jwsphere.conflex.StandardInjectors.BigIntegerInjector;
 import com.jwsphere.conflex.StandardInjectors.BoxedBoolean;
 import com.jwsphere.conflex.StandardInjectors.BoxedDouble;
 import com.jwsphere.conflex.StandardInjectors.BoxedFloat;
 import com.jwsphere.conflex.StandardInjectors.BoxedInteger;
 import com.jwsphere.conflex.StandardInjectors.BoxedLong;
+import com.jwsphere.conflex.StandardInjectors.EnumInjector;
+import com.jwsphere.conflex.StandardInjectors.FileInjector;
+import com.jwsphere.conflex.StandardInjectors.InetAddressInjector;
 import com.jwsphere.conflex.StandardInjectors.PrimitiveBoolean;
 import com.jwsphere.conflex.StandardInjectors.PrimitiveDouble;
 import com.jwsphere.conflex.StandardInjectors.PrimitiveFloat;
 import com.jwsphere.conflex.StandardInjectors.PrimitiveInteger;
 import com.jwsphere.conflex.StandardInjectors.PrimitiveLong;
 import com.jwsphere.conflex.StandardInjectors.StringInjector;
-import com.jwsphere.conflex.StandardInjectors.EnumInjector;
+import com.jwsphere.conflex.StandardInjectors.URIInjector;
+import com.jwsphere.conflex.StandardInjectors.URLInjector;
 
 /**
  * Conflex performs configuration injection using Java's reflection facilities 
@@ -67,7 +79,13 @@ public class Conflex {
                 map.put(Long.class, new BoxedLong());
                 map.put(Float.class, new BoxedFloat());
                 map.put(Double.class, new BoxedDouble());
+                map.put(BigInteger.class, new BigIntegerInjector());
+                map.put(BigDecimal.class, new BigDecimalInjector());
                 map.put(Enum.class, new EnumInjector());
+                map.put(URL.class, new URLInjector());
+                map.put(URI.class, new URIInjector());
+                map.put(File.class, new FileInjector());
+                map.put(InetAddress.class, new InetAddressInjector());
                 return map;
             }
         };
@@ -104,34 +122,48 @@ public class Conflex {
     private void resolve() {
         for (Field field : clazz.getDeclaredFields()) {
             if (field.isAnnotationPresent(ConflexProperty.class)) {
-                ConflexProperty property = field.getAnnotation(ConflexProperty.class);
-                property.key();
-
-                boolean isEnum = field.getType().isEnum();
-                ConflexInjector injector = isEnum ? injectors.get(Enum.class) : injectors.get(field.getType());
+                ConflexInjector injector = findInjector(field.getType());
                 if (injector != null) {
+                    ConflexProperty property = field.getAnnotation(ConflexProperty.class);
                     resolvedProperties.add(new ResolvedProperty(property, field, null, injector));
                 } 
             }
         }
-
         for (Method method : clazz.getDeclaredMethods()) {
             if (method.isAnnotationPresent(ConflexProperty.class) && method.getParameterTypes().length == 1) {
-                ConflexProperty property = method.getAnnotation(ConflexProperty.class);
-                property.key();
-
-                Class<?> parameterType = method.getParameterTypes()[0];
-                boolean isEnum = parameterType.isEnum();
-                ConflexInjector injector = isEnum ? injectors.get(Enum.class) : injectors.get(parameterType);
+                ConflexInjector injector = findInjector(method.getParameterTypes()[0]);
                 if (injector != null) {
+                    ConflexProperty property = method.getAnnotation(ConflexProperty.class);
                     resolvedProperties.add(new ResolvedProperty(property, null, method, injector));
                 } 
             }
         }
-
         this.dirty = false;
     }
-    
+
+    /**
+     * Attempts to find an injector that will produce a value that is assignable to
+     * the field.
+     * 
+     * 1. Look for an injector registered for the concrete type.
+     * 2. Check if the type is an enum.
+     * 3. Check if there is an injector registered for a superclass.
+     * 4. Check if there is an injector registered for an interface.
+     * 
+     * @param clazz The class to find an injector for.
+     * @return An injector if found, null otherwise.
+     */
+    private ConflexInjector findInjector(Class<?> clazz) {
+        if (clazz == null) {
+            return null;
+        }
+        ConflexInjector injector = injectors.get(clazz);
+        if (injector == null && clazz.isEnum()) {
+            injector = injectors.get(Enum.class);
+        }
+        return injector;
+    }
+
     /**
      * Sets a custom key prefix that will be used to retrieve configuration values
      * from the input (e.g. if the ConflexProperty key is "key" and the prefix

@@ -13,8 +13,16 @@
 // limitations under the License.
 package com.jwsphere.conflex;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.UnknownHostException;
 
 public final class StandardInjectors {
 
@@ -131,6 +139,56 @@ public final class StandardInjectors {
         @Override
         protected Object parse(String value) {
             return Double.parseDouble(value);
+        }
+    }
+    
+    public static class BigIntegerInjector extends ParserBasedObjectInjector {
+        @Override
+        protected Object parse(String value) {
+            return new BigInteger(value);
+        }
+    }
+
+    public static class BigDecimalInjector extends ParserBasedObjectInjector {
+        @Override
+        protected Object parse(String value) {
+            return new BigDecimal(value);
+        }
+    }
+    
+    public static class URLInjector extends ParserBasedObjectInjector {
+        @Override
+        protected Object parse(String value) {
+            try {
+                return new URL(value);
+            } catch (MalformedURLException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+    }
+    
+    public static class URIInjector extends ParserBasedObjectInjector {
+        @Override
+        protected Object parse(String value) {
+            return URI.create(value);
+        }
+    }
+    
+    public static class FileInjector extends ParserBasedObjectInjector {
+        @Override
+        protected Object parse(String value) {
+            return new File(value);
+        }
+    }
+    
+    public static class InetAddressInjector extends ParserBasedObjectInjector {
+        @Override
+        protected Object parse(String value) {
+            try {
+                return InetAddress.getByName(value);
+            } catch (UnknownHostException e) {
+                throw new IllegalArgumentException(e);
+            }
         }
     }
 
