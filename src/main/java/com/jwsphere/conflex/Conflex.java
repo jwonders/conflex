@@ -222,6 +222,10 @@ public class Conflex {
             String value = rp.p.defaultValue();
             if (object instanceof String) {
                 value = (String) object;
+            } else if (object != null) {
+                // support additional object types like Integer, Float, etc.
+                // TODO support java list types?
+                value = object.toString();
             }
             if (rp.field != null) {
                 rp.injector.inject(target, rp.field, value);
@@ -229,6 +233,39 @@ public class Conflex {
                 rp.injector.inject(target, rp.method, value);
             }
         }
+    }
+    
+    /**
+     * Constructs a string that describes the configuration instance after properties
+     * have been injected.
+     * 
+     * @param instance
+     * @return
+     */
+    public synchronized String describe(Object instance) {
+        StringBuilder sb = new StringBuilder();
+        
+        for (ResolvedProperty rp : resolvedProperties) {
+            String key = rp.p.key();
+            String defaultValue = rp.p.defaultValue();
+            String value = "[unknown - method properties not supported]";
+            if (rp.field != null) {
+                try {
+                    value = rp.field.get(instance).toString();
+                } catch (IllegalArgumentException e) {
+                    value = "[unknown - error accessing field]";
+                } catch (IllegalAccessException e) {
+                    value = "[unknown - error accessing field]";
+                }
+            }
+            sb.append(key).append(" = ");
+            if (!(value.equals(defaultValue))) {
+                sb.append(value).append(" ");
+            }
+            sb.append("[default value = ").append(defaultValue).append("]").append("\n");
+        }
+        
+        return sb.toString();
     }
 
     @Override
