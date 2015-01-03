@@ -93,7 +93,7 @@ public class Conflex {
 
     private final List<ResolvedProperty> resolvedProperties;
     private final Map<Class<?>, ConflexInjector> injectors;
-    private String prefix;
+    private volatile String prefix;
 
     private final Class<?> clazz;
     private volatile boolean dirty;
