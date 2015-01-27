@@ -33,7 +33,7 @@ class FooServer {
     public static final String PORT_KEY = "port";
 
     public static final String DEFAULT_HOST = "localhost";
-    public static fianl String DEFAULT_PORT = "8080";
+    public static final String DEFAULT_PORT = "8080";
 
     /** The host for the server to bind to. **/
     String host;
@@ -44,6 +44,29 @@ class FooServer {
     public FooServer(Properties properties) {
         host = properties.get(HOST_KEY, DEFAULT_HOST);
         port = Integer.parseInt(properties.get(PORT_KEY, DEFAULT_PORT));
+    };
+    
+    public FooServer(Map<String, ?> properties) {
+        // This is where things get ugly because we need to check for null
+        // and fall back to the default value.
+        host = properties.get(HOST_KEY);
+        if (host == null) {
+            host = DEFAULT_HOST;
+        }
+        
+        // Parsing numeric values is even uglier because we need to deal with
+        // potential number format exceptions when considering whether to fall
+        // back to a default value.
+        Object o = properties.get(PORT_KEY);
+        if (object != null) {
+            try {
+                port = Integer.parseInt(object);
+            } catch (NumberFormatException e) {
+                port = DEFAULT_PORT;
+            }
+        } else {
+            port = DEFAULT_PORT;
+        }
     };
 };
 ```
@@ -69,6 +92,11 @@ class FooServer {
     int port;
 
     public FooServer(Properties properties) {
+        conflex.inject(this, properties);
+    };
+    
+    // With conflex there is no need to implement parsing logic multiple places
+    public FooServer(Map<String, ?> properties) {
         conflex.inject(this, properties);
     };
 };
